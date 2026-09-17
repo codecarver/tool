@@ -239,6 +239,25 @@
     // HTML -> Markdown
     function htmlToMd(root) {
         const out = [];
+        // Ambil teks blok kode dengan MEMPERTAHANKAN baris baru: <br> dan elemen blok
+        // (div/p) yang dibuat saat menekan Enter di dalam <pre> diubah jadi "\n".
+        function preText(el) {
+            let s = '';
+            el.childNodes.forEach(function (n) {
+                if (n.nodeType === 3) { s += n.nodeValue; return; }
+                if (n.nodeType !== 1) return;
+                const t = n.nodeName.toLowerCase();
+                if (t === 'br') { s += '\n'; return; }
+                if (t === 'div' || t === 'p') {
+                    if (s && !/\n$/.test(s)) s += '\n';
+                    s += preText(n);
+                    if (!/\n$/.test(s)) s += '\n';
+                } else {
+                    s += preText(n);
+                }
+            });
+            return s;
+        }
         function inline(node) {
             let s = '';
             node.childNodes.forEach(function (c) {
@@ -299,8 +318,8 @@
                 if (c.nodeType !== 1) return;
                 const tag = c.nodeName.toLowerCase();
                 // <code> multi-baris -> fenced block (bukan inline backtick).
-                if (tag === 'code' && /\n/.test(c.textContent)) {
-                    out.push('```'); out.push(c.textContent.replace(/\n$/, '')); out.push('```'); out.push('');
+                if (tag === 'code' && (/\n/.test(c.textContent) || c.querySelector('br,div,p'))) {
+                    out.push('```'); out.push(preText(c).replace(/\n+$/, '')); out.push('```'); out.push('');
                     return;
                 }
                 if (/^h[1-6]$/.test(tag)) {
@@ -316,7 +335,7 @@
                 } else if (tag === 'blockquote') {
                     inline(c).split('\n').forEach(function (ln) { out.push('> ' + ln); }); out.push('');
                 } else if (tag === 'pre') {
-                    out.push('```'); out.push(c.textContent.replace(/\n$/, '')); out.push('```'); out.push('');
+                    out.push('```'); out.push(preText(c).replace(/\n+$/, '')); out.push('```'); out.push('');
                 } else if (tag === 'ul' || tag === 'ol') {
                     renderList(c, 0);
                     out.push('');
