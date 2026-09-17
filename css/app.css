@@ -1,0 +1,320 @@
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; background: #f4f6f8;
+    color: #1f2933; display: flex; flex-direction: column; min-height: 100vh; }
+.container { flex: 1 0 auto; }
+.app-footer { flex-shrink: 0; background: #1f2933; color: #cbd2d9; text-align: center;
+    padding: 1rem; font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.25rem; align-items: center; }
+.app-footer a { color: #9ecbff; text-decoration: none; }
+.app-footer a:hover { text-decoration: underline; }
+
+.navbar { display: flex; align-items: center; gap: 0.5rem; background: #1f6feb; color: #fff; padding: 0.6rem 1rem; flex-wrap: wrap; }
+.navbar a { color: #fff; text-decoration: none; padding: 0.4rem 0.65rem; border-radius: 4px; display: inline-block; }
+.navbar a:hover { background: rgba(255,255,255,0.12); }
+.navbar a.active { background: #fff; color: #1f6feb; font-weight: 600; }
+.navbar .brand { font-weight: bold; font-size: 1.1rem; margin-right: 1rem; padding: 0.3rem 0;
+    display: flex; align-items: center; gap: 0.5rem; }
+.navbar .brand:hover { background: transparent; }
+.navbar .brand-icon { flex-shrink: 0; }
+.brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+.brand-unit { font-size: 0.72rem; font-weight: 500; color: #d7e6ff; }
+.nav-links { flex: 1; display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; }
+.nav-links > span { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+
+/* Tombol hamburger hanya tampil di layar kecil */
+.nav-toggle { display: none; background: rgba(255,255,255,0.15); border: none; color: #fff;
+    font-size: 1.3rem; line-height: 1; padding: 0.35rem 0.6rem; border-radius: 4px; cursor: pointer; }
+
+.logout-form { display: flex; align-items: center; gap: 0.5rem; }
+.logout-form button { background: #0b4fc0; color: #fff; border: none; padding: 0.45rem 0.8rem; border-radius: 4px; cursor: pointer; }
+
+.container { max-width: 1000px; margin: 1.5rem auto; padding: 0 1rem; }
+.card { background: #fff; border-radius: 8px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 1.25rem; }
+
+/* Tabel dibungkus agar bisa di-scroll horizontal di layar sempit */
+.table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { width: 100%; border-collapse: collapse; min-width: 480px; }
+th, td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid #e4e7eb; white-space: nowrap; }
+th { background: #f0f3f6; }
+/* Kolom yang boleh membungkus teks panjang (mis. detail audit / keterangan) */
+td.wrap { white-space: normal; min-width: 200px; }
+
+.btn { display: inline-block; background: #1f6feb; color: #fff; border: none; padding: 0.55rem 0.95rem;
+    border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 1rem; }
+.btn-danger { background: #d64545; }
+.btn-sm { padding: 0.3rem 0.55rem; font-size: 0.85rem; }
+
+label { display: block; margin: 0.5rem 0 0.2rem; font-size: 0.9rem; }
+input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2d9; border-radius: 4px;
+    font-size: 1rem; }
+
+.row { display: flex; gap: 1rem; flex-wrap: wrap; }
+.row > div { flex: 1; min-width: 180px; }
+
+.alert { padding: 0.6rem 1rem; border-radius: 4px; margin-bottom: 0.75rem; }
+.alert-success { background: #e3f9e5; color: #1a7f37; }
+.alert-error { background: #fbe9e7; color: #b71c1c; }
+
+.masuk { color: #1a7f37; font-weight: 600; }
+.keluar { color: #b71c1c; font-weight: 600; }
+
+.summary { display: flex; gap: 1rem; margin: 0.5rem 0; flex-wrap: wrap; }
+.summary div { background: #f0f3f6; padding: 0.75rem 1rem; border-radius: 6px; flex: 1; min-width: 140px; }
+
+.login-wrap { max-width: 360px; margin: 8vh auto; padding: 0 1rem; }
+
+/* ===== Landing ===== */
+.landing-hero { background: linear-gradient(135deg, #1f6feb, #0b4fc0); color: #fff; }
+.landing-nav { display: flex; justify-content: space-between; align-items: center;
+    max-width: 1000px; margin: 0 auto; padding: 1rem; flex-wrap: wrap; gap: 0.5rem; }
+.landing-nav .brand { color: #fff; text-decoration: none; font-weight: bold; font-size: 1.15rem;
+    display: flex; align-items: center; gap: 0.5rem; }
+.landing-nav .btn { margin-left: 0.5rem; }
+.hero-content { max-width: 1000px; margin: 0 auto; padding: 2.5rem 1rem 3rem; }
+.hero-content h1 { font-size: 2rem; margin: 0 0 0.75rem; max-width: 720px; }
+.hero-content p { font-size: 1.1rem; opacity: 0.95; max-width: 640px; }
+.hero-cta { margin-top: 1.5rem; display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.landing-hero-sm .hero-content { padding: 1.5rem 1rem 2rem; }
+.landing-hero-sm .hero-content h1 { font-size: 1.6rem; }
+
+.btn-light { background: #fff; color: #1f6feb; }
+.btn-ghost { background: transparent; border: 1px solid rgba(255,255,255,0.6); color: #fff; }
+.btn-outline { background: transparent; border: 1px solid #1f6feb; color: #1f6feb; }
+
+.feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 0.5rem; }
+.feature { background: #f0f3f6; border-radius: 8px; padding: 1rem; }
+.feature h3 { margin: 0 0 0.4rem; font-size: 1.05rem; }
+.feature p { margin: 0; font-size: 0.92rem; color: #3e4c59; }
+
+@media (max-width: 640px) {
+    .hero-content h1 { font-size: 1.5rem; }
+    .hero-content p { font-size: 1rem; }
+    .landing-nav .btn { width: auto; margin-bottom: 0; }
+    .hero-cta .btn { width: 100%; text-align: center; }
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 640px) {
+    .navbar { padding: 0.5rem 0.75rem; }
+    .nav-toggle { display: inline-block; order: 2; margin-left: auto; }
+    .nav-links { flex-basis: 100%; order: 3; flex-direction: column; align-items: stretch; display: none; }
+    .nav-links.open { display: flex; }
+    .nav-links > span { flex-direction: column; }
+    .navbar a { padding: 0.6rem 0.5rem; border-radius: 6px; }
+    .logout-form { order: 1; }
+    .container { margin: 1rem auto; }
+    .card { padding: 1rem; }
+    .summary div { min-width: 100%; }
+    .btn { width: 100%; text-align: center; margin-bottom: 0.4rem; }
+    .btn-sm { width: auto; margin-bottom: 0; }
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.25rem; }
+}
+
+/* ===== Mind Map ===== */
+.mm-toolbar { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+.mm-canvas { position: relative; width: 100%; height: 600px; overflow: auto;
+    border: 1px solid #cbd2d9; border-radius: 8px; background:
+    linear-gradient(#eef2f6 1px, transparent 1px) 0 0/100% 24px,
+    linear-gradient(90deg, #eef2f6 1px, transparent 1px) 0 0/24px 100%, #fbfdff; }
+.mm-stage { position: relative; transform-origin: 0 0; }
+.mm-svg { position: absolute; top: 0; left: 0; pointer-events: none; }
+.mm-nodes { position: absolute; top: 0; left: 0; }
+.mm-node { position: absolute; display: inline-flex; align-items: center; gap: 0.3rem;
+    background: #fff; border: 2px solid #1f6feb; border-radius: 16px; padding: 0.45rem 0.7rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10); cursor: grab; user-select: none;
+    width: max-content; max-width: 320px; transition: box-shadow 0.15s, transform 0.15s; }
+.mm-node:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.16); }
+.mm-editor { white-space: pre-wrap; font-family: inherit; font-size: 0.9rem; min-width: 140px;
+    border: 1px solid #1f6feb; border-radius: 4px; padding: 0.25rem; resize: both; }
+.mm-zoom-controls { display: inline-flex; align-items: center; gap: 0.35rem; margin-left: auto; }
+.mm-zoom-controls #mm-zoom-level { min-width: 44px; text-align: center; font-size: 0.85rem; }
+.mm-node.dragging { cursor: grabbing; opacity: 0.85; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.mm-label { font-size: 0.9rem; padding: 0 0.2rem; text-align: center; flex: 0 1 auto;
+    white-space: pre-wrap; overflow-wrap: anywhere; font-weight: 600; color: #2b3648; }
+.mm-toggle { width: 20px; height: 20px; line-height: 1; border-radius: 50%; border: none;
+    background: #1f6feb; color: #fff; cursor: pointer; font-weight: bold; }
+.mm-act { border: none; background: #e4e7eb; color: #1f2933; border-radius: 4px;
+    font-size: 0.72rem; padding: 0.15rem 0.35rem; cursor: pointer; }
+.mm-add { width: 20px; height: 20px; border-radius: 50%; font-weight: bold; font-size: 0.9rem;
+    line-height: 1; padding: 0; background: #d6e4ff; color: #1f6feb; }
+.mm-act.mm-del { background: #fbe0e0; color: #b71c1c; font-weight: bold; }
+/* Badge jumlah anak pada node induk */
+.mm-count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px;
+    height: 18px; padding: 0 5px; border-radius: 9px; background: #eef2f6; color: #52606d;
+    font-size: 0.72rem; font-weight: 700; border: 1px solid #d3dce6; cursor: pointer; }
+.mm-count:hover { background: #d6e4ff; color: #1f6feb; border-color: #1f6feb; }
+.mm-count.collapsed { background: #1f6feb; color: #fff; border-color: #1f6feb; }
+/* Titik penanda node punya deskripsi */
+.mm-desc-dot { width: 8px; height: 8px; border-radius: 50%; background: #1f6feb;
+    display: inline-block; flex: 0 0 auto; }
+/* Tombol tandai selesai + gaya node selesai */
+.mm-act.mm-done { background: #e6f4ea; color: #1a7f37; font-weight: bold; }
+.mm-act.mm-done.is-done { background: #1a7f37; color: #fff; }
+.mm-node.is-done { opacity: 0.72; }
+.mm-node.is-done .mm-label { text-decoration: line-through; text-decoration-thickness: 2px; }
+.mm-act.mm-note { background: #e6f0ff; color: #1f6feb; font-weight: bold; position: relative; }
+/* Titik penanda bila node punya deskripsi */
+.mm-act.mm-note.has-desc::after { content: ''; position: absolute; top: -2px; right: -2px;
+    width: 7px; height: 7px; background: #d64545; border: 1px solid #fff; border-radius: 50%; }
+/* Modal deskripsi */
+.mm-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 2000;
+    display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.mm-modal { background: #fff; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    width: min(600px, 100%); max-height: 80vh; display: flex; flex-direction: column; overflow: hidden; }
+.mm-modal-title { font-weight: 600; padding: 0.9rem 1rem; border-bottom: 1px solid #e4e7eb;
+    color: #1f2933; }
+.mm-modal-textarea { flex: 1; min-height: 220px; border: none; padding: 1rem; font-family: inherit;
+    font-size: 0.95rem; resize: vertical; outline: none; white-space: pre-wrap; }
+.mm-modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; padding: 0.75rem 1rem;
+    border-top: 1px solid #e4e7eb; }
+
+/* ===== Tools hub ===== */
+.tool-card { display: block; text-decoration: none; color: inherit; transition: box-shadow .15s, transform .15s; }
+.tool-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.12); transform: translateY(-2px); }
+
+/* ===== Sequence diagram ===== */
+.sq-layout { display: flex; gap: 1rem; flex-wrap: wrap; }
+.sq-input { flex: 1 1 260px; min-height: 380px; font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 0.9rem; padding: 0.6rem; border: 1px solid #cbd2d9; border-radius: 8px; resize: vertical; }
+.sq-canvas { flex: 2 1 400px; overflow: auto; border: 1px solid #cbd2d9; border-radius: 8px;
+    background: #fbfdff; min-height: 380px; }
+
+/* ===== Generic diagram (flow & free) ===== */
+.dg-node { position: absolute; display: inline-flex; align-items: center; gap: 0.25rem;
+    background: #eef3ff; border: 2px solid #1f6feb; padding: 0.5rem 0.7rem; cursor: grab;
+    user-select: none; min-width: 70px; justify-content: center; box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    box-sizing: border-box; overflow: visible; }
+.dg-node.dragging { cursor: grabbing; opacity: 0.85; }
+.dg-node.linking { outline: 2px dashed #b7791f; }
+/* Node yang sedang dipilih (multi-select via Shift+klik) */
+.dg-node.selected { outline: 2px solid #1f6feb; outline-offset: 2px; }
+/* Node yang tergabung dalam grup */
+.dg-node.grouped { box-shadow: 0 0 0 2px rgba(31,111,235,0.25), 0 1px 4px rgba(0,0,0,0.1); }
+/* Kotak seleksi rentang (rubber-band) */
+.dg-rubber { position: absolute; z-index: 50; border: 1.5px dashed #1f6feb;
+    background: rgba(31,111,235,0.10); pointer-events: none; }
+.dg-rect { border-radius: 6px; }
+.dg-ellipse { border-radius: 50%; padding: 0.7rem 1rem; }
+/* Keputusan: ketupat simetris. clip-path dipindah ke lapisan ::before agar node itu
+   sendiri TIDAK terpotong — sehingga tombol aksi & handle resize tetap terlihat/klikable. */
+.dg-diamond { padding: 1.4rem 2rem; border: none; border-radius: 0; background: transparent;
+    box-shadow: none; position: absolute; }
+.dg-diamond::before { content: ''; position: absolute; inset: 0; z-index: 0;
+    background: var(--dg-fill, #eef3ff);
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    filter: drop-shadow(0 0 0.5px #1f6feb) drop-shadow(0 0 0.5px #1f6feb); }
+.dg-diamond .dg-label { text-align: center; position: relative; z-index: 1; }
+.dg-diamond .dg-act { position: relative; z-index: 2; }
+/* Bentuk flowchart tambahan */
+.dg-terminator { border-radius: 999px; padding: 0.5rem 1.1rem; }           /* mulai/selesai */
+.dg-io { transform: skewX(-18deg); }                                        /* input/output (jajar genjang) */
+.dg-io .dg-label { transform: skewX(18deg); }
+.dg-doc { border-radius: 6px 6px 0 0; border-bottom-style: dashed; }        /* dokumen (perkiraan) */
+.dg-subroutine { border-left-width: 6px; border-right-width: 6px; border-radius: 4px; } /* predefined process */
+.dg-label { font-size: 0.85rem; text-align: center; white-space: pre-wrap; }
+/* Label teks bebas: tanpa kotak/border/latar, hanya tulisan */
+.dg-text { border: none; background: transparent; box-shadow: none; padding: 0.2rem 0.3rem;
+    min-width: 40px; }
+.dg-text .dg-label { font-size: 0.95rem; }
+/* Baris pilihan warna di dalam menu konteks node */
+.dg-swatch-row { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 10px; border-top: 1px solid #eef2f6;
+    border-bottom: 1px solid #eef2f6; }
+.dg-swatch-btn { width: 22px; height: 22px; border-radius: 4px; border: 1px solid #cbd2d9;
+    cursor: pointer; padding: 0; }
+.dg-swatch-btn:hover { outline: 2px solid #1f6feb; outline-offset: 1px; }
+/* Handle resize di pojok kanan-bawah node */
+.dg-resize { position: absolute; right: -5px; bottom: -5px; width: 12px; height: 12px;
+    background: #fff; border: 2px solid #1f6feb; border-radius: 3px; cursor: nwse-resize;
+    z-index: 5; box-sizing: border-box; }
+.dg-resize:hover { background: #d6e4ff; }
+.mm-canvas.dg-linking { cursor: crosshair; }
+/* Saat menggeser panel dengan Ctrl+seret */
+.mm-canvas.dg-panning, .mm-canvas.dg-panning * { cursor: grabbing !important; }
+/* Untuk flow/free diagram, grup garis (edge) harus bisa diklik/hover, meski .mm-svg secara umum pointer-events:none */
+#dg-svg { pointer-events: none; }
+#dg-svg g { pointer-events: all; }
+/* Saat mode hubungkan, matikan interaksi garis agar klik jatuh ke node tujuan */
+.mm-canvas.dg-linking #dg-svg g { pointer-events: none; }
+.dg-menu { position: fixed; z-index: 1000; background: #fff; border: 1px solid #cbd2d9;
+    border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,0.18); overflow: hidden; min-width: 150px; }
+.dg-menu button { display: block; width: 100%; text-align: left; border: none; background: #fff;
+    padding: 0.5rem 0.8rem; cursor: pointer; font-size: 0.9rem; }
+.dg-menu button:hover { background: #eef3ff; }
+
+/* ===== Notes (Markdown WYSIWYG) ===== */
+.container-wide { max-width: 1200px; }
+.nt-layout { display: flex; gap: 1rem; align-items: stretch; height: 70vh; min-height: 420px; }
+.nt-sidebar { flex: 0 0 240px; border: 1px solid #cbd2d9; border-radius: 8px; background: #fbfdff;
+    display: flex; flex-direction: column; overflow: hidden; }
+.nt-side-head { display: flex; gap: 0.35rem; padding: 0.5rem; border-bottom: 1px solid #e4e7eb; flex-wrap: wrap; }
+.nt-side-head .btn { margin: 0; }
+.nt-folder-name { font-size: 0.8rem; font-weight: 600; color: #3e4c59; padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid #eef2f6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nt-tree { list-style: none; margin: 0; padding: 0.3rem; overflow: auto; flex: 1; }
+.nt-item { padding: 0.35rem 0.5rem; border-radius: 5px; cursor: pointer; font-size: 0.85rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nt-item:hover { background: #eef3ff; }
+.nt-item.active { background: #1f6feb; color: #fff; }
+.nt-empty { padding: 0.5rem; font-size: 0.8rem; color: #9aa5b1; }
+.nt-hint { font-size: 0.72rem; color: #b7791f; padding: 0.5rem; margin: 0; }
+
+.nt-main { flex: 1; display: flex; flex-direction: column; border: 1px solid #cbd2d9; border-radius: 8px; overflow: hidden; min-height: 0; min-width: 0; }
+.nt-toolbar { display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap; padding: 0.5rem;
+    border-bottom: 1px solid #e4e7eb; background: #f7f9fb; }
+.nt-toolbar button { border: 1px solid #cbd2d9; background: #fff; border-radius: 5px; padding: 0.25rem 0.5rem;
+    cursor: pointer; font-size: 0.85rem; min-width: 30px; }
+.nt-toolbar button:hover { background: #eef3ff; border-color: #1f6feb; }
+.nt-toolbar select { width: auto; padding: 0.25rem 0.4rem; font-size: 0.85rem; }
+.nt-toolbar .btn { margin: 0; }
+.nt-sep { width: 1px; height: 22px; background: #cbd2d9; margin: 0 0.25rem; }
+.nt-autosave { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.82rem; margin: 0;
+    white-space: nowrap; }
+.nt-autosave input { width: auto; }
+.nt-status { font-size: 0.78rem; color: #52606d; margin-left: auto; white-space: nowrap; }
+.nt-status.ok { color: #1a7f37; }
+.nt-status.warn { color: #b71c1c; }
+
+.nt-editor { flex: 1; padding: 1rem 1.2rem; overflow-y: auto; overflow-x: auto; outline: none; line-height: 1.6;
+    font-size: 1rem; color: #1f2933; background: #fff; min-height: 0; }
+.nt-editor:focus { outline: none; }
+.nt-editor h1 { font-size: 1.6rem; margin: 0.6rem 0 0.4rem; }
+.nt-editor h2 { font-size: 1.35rem; margin: 0.6rem 0 0.4rem; }
+.nt-editor h3 { font-size: 1.15rem; margin: 0.6rem 0 0.4rem; }
+.nt-editor p { margin: 0.4rem 0; }
+.nt-editor ul, .nt-editor ol { margin: 0.4rem 0 0.4rem 1.4rem; }
+.nt-editor blockquote { border-left: 3px solid #1f6feb; margin: 0.5rem 0; padding: 0.2rem 0.8rem;
+    color: #52606d; background: #f7f9fb; }
+.nt-editor pre { background: #1f2933; color: #e4e7eb; padding: 0.7rem 0.9rem; border-radius: 6px;
+    overflow: auto; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.88rem; }
+.nt-editor code { background: #eef2f6; padding: 0.1rem 0.3rem; border-radius: 4px;
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.9em; }
+.nt-editor pre code { background: transparent; padding: 0; }
+.nt-editor hr { border: none; border-top: 1px solid #cbd2d9; margin: 1rem 0; }
+.nt-editor a { color: #1f6feb; }
+.nt-editor details { border: 1px solid #cbd2d9; border-radius: 6px; padding: 0.4rem 0.7rem; margin: 0.5rem 0; background: #fbfdff; }
+.nt-editor details > summary { cursor: pointer; font-weight: 600; color: #1f2933; outline: none; }
+.nt-editor details[open] > summary { margin-bottom: 0.4rem; }
+.nt-editor table { border-collapse: collapse; width: 100%; margin: 0.6rem 0; }
+.nt-editor th, .nt-editor td { border: 1px solid #cbd2d9; padding: 0.4rem 0.6rem; text-align: left; min-width: 40px; }
+.nt-editor th { background: #f0f3f6; font-weight: 600; }
+
+/* Dropdown toolbar (warna & tanggal) */
+.nt-dd { position: relative; display: inline-block; }
+.nt-dd-menu { display: none; position: absolute; top: 100%; left: 0; z-index: 100; margin-top: 3px;
+    background: #fff; border: 1px solid #cbd2d9; border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    padding: 6px; }
+.nt-dd-menu.open { display: block; }
+.nt-swatch { width: 22px; height: 22px; border-radius: 4px; border: 1px solid #cbd2d9; cursor: pointer;
+    padding: 0; margin: 2px; display: inline-block; font-size: 0.7rem; line-height: 20px; color: #52606d; }
+.nt-swatch:hover { outline: 2px solid #1f6feb; outline-offset: 1px; }
+.nt-dd-menu:not(.nt-date-menu) { width: 148px; }
+.nt-date-menu { min-width: 240px; max-height: 320px; overflow: auto; }
+.nt-date-item { display: block; width: 100%; text-align: left; border: none; background: #fff;
+    padding: 0.4rem 0.6rem; cursor: pointer; font-size: 0.88rem; border-radius: 4px; }
+.nt-date-item:hover { background: #eef3ff; }
+
+@media (max-width: 760px) {
+    .nt-layout { flex-direction: column; }
+    .nt-sidebar { flex: 0 0 auto; max-height: 220px; }
+}

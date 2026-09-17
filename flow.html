@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Flow Diagram</title>
+    <link rel="stylesheet" href="css/app.css"/>
+</head>
+<body>
+<header class="landing-hero landing-hero-sm">
+    <nav class="landing-nav">
+        <a class="brand" href="index.html">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 21h18"/><path d="M5 21V11l4-3 4 3v10"/><path d="M13 21v-6l4-3 4 3v6"/><path d="M8 21v-4"/>
+            </svg>
+            <span>Tools</span>
+        </a>
+        <div><a class="btn btn-light" href="index.html">Beranda</a></div>
+    </nav>
+    <div class="hero-content"><h1>Flow Diagram</h1>
+        <p>Susun alur proses: tambah node, seret, dan hubungkan dengan panah.</p></div>
+</header>
+
+<div class="container">
+    <div class="card">
+        <div class="mm-toolbar">
+            <button class="btn btn-sm" id="dg-add-terminator">+ Mulai/Selesai</button>
+            <button class="btn btn-sm" id="dg-add-process">+ Proses</button>
+            <button class="btn btn-sm" id="dg-add-decision">+ Keputusan</button>
+            <button class="btn btn-sm" id="dg-add-io">+ Input/Output</button>
+            <button class="btn btn-sm" id="dg-add-doc">+ Dokumen</button>
+            <button class="btn btn-sm" id="dg-add-subroutine">+ Sub-proses</button>
+            <button class="btn btn-sm" id="dg-add-text">+ Teks</button>
+            <button class="btn btn-sm" id="dg-export-json">Simpan (JSON)</button>
+            <button class="btn btn-sm" id="dg-export-png">Ekspor Gambar (PNG)</button>
+            <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0">Impor (JSON)
+                <input type="file" id="dg-import" accept=".json,application/json" hidden/>
+            </label>
+            <button class="btn btn-sm btn-danger" id="dg-reset">Reset</button>
+            <span class="mm-zoom-controls">
+                <button class="btn btn-sm btn-outline" id="dg-zoom-out">&minus;</button>
+                <span id="dg-zoom-level">100%</span>
+                <button class="btn btn-sm btn-outline" id="dg-zoom-in">+</button>
+                <button class="btn btn-sm btn-outline" id="dg-zoom-reset">100%</button>
+            </span>
+        </div>
+        <p style="font-size:0.85rem;color:#52606d;margin:0.5rem 0">
+            Seret node untuk memindah. <strong>Klik kanan</strong> node untuk menu (ubah teks, hubungkan panah, warna, hapus).
+            Klik dua kali teks node untuk mengubah cepat. Pada garis: seret <strong>titik biru</strong> untuk melengkungkan,
+            klik dua kali garis untuk beri <strong>keterangan</strong>, atau <strong>klik kanan</strong> garis untuk menu (keterangan/lurus/gaya lengkung atau siku/hapus).
+            Gunakan <strong>+ Teks</strong> untuk menulis teks bebas di luar gambar.
+            <strong>Seret di area kosong</strong> untuk memilih beberapa node sekaligus (atau <strong>Shift+klik</strong> satu per satu), lalu klik kanan &rarr; <strong>Grup</strong> agar bergerak bersama (klik kanan &rarr; Lepas grup untuk membatalkan). Tersimpan otomatis di browser ini.
+        </p>
+        <div id="dg-canvas" class="mm-canvas">
+            <div id="dg-stage" class="mm-stage">
+                <svg id="dg-svg" class="mm-svg" width="600" height="400"></svg>
+                <div id="dg-nodes" class="mm-nodes"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<footer class="app-footer">
+    <span>Built with love from Darjo, kota autopilot.</span>
+</footer>
+<script src="js/diagram-core.js"></script>
+<script>
+    createDiagram({
+        storageKey: 'rtfinance.flow.v1', fileBase: 'flow',
+        canvasId: 'dg-canvas', svgId: 'dg-svg', nodesId: 'dg-nodes', stageId: 'dg-stage',
+        exportJsonId: 'dg-export-json', exportPngId: 'dg-export-png', importId: 'dg-import',
+        resetId: 'dg-reset', zoomInId: 'dg-zoom-in', zoomOutId: 'dg-zoom-out',
+        zoomResetId: 'dg-zoom-reset', zoomLevelId: 'dg-zoom-level',
+        shapes: ['terminator', 'rect', 'diamond', 'io', 'doc', 'subroutine', 'text'], defaultShape: 'rect',
+        allowFill: true,
+        addButtons: [
+            { id: 'dg-add-terminator', shape: 'terminator' },
+            { id: 'dg-add-process', shape: 'rect' },
+            { id: 'dg-add-decision', shape: 'diamond' },
+            { id: 'dg-add-io', shape: 'io' },
+            { id: 'dg-add-doc', shape: 'doc' },
+            { id: 'dg-add-subroutine', shape: 'subroutine' },
+            { id: 'dg-add-text', shape: 'text' }
+        ],
+        sample: {
+            nodes: [
+                { id: 'n1', text: 'Mulai', shape: 'terminator', x: 80, y: 40 },
+                { id: 'n2', text: 'Input data', shape: 'io', x: 80, y: 150 },
+                { id: 'n3', text: 'Proses', shape: 'rect', x: 80, y: 260 },
+                { id: 'n4', text: 'Valid?', shape: 'diamond', x: 90, y: 370 },
+                { id: 'n5', text: 'Selesai', shape: 'terminator', x: 80, y: 500 }
+            ],
+            edges: [
+                { from: 'n1', to: 'n2' }, { from: 'n2', to: 'n3' },
+                { from: 'n3', to: 'n4' }, { from: 'n4', to: 'n5', label: 'ya' }
+            ]
+        }
+    });
+</script>
+</body>
+</html>

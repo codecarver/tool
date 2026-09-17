@@ -1,0 +1,14 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+
+# Editor/IDE
+.idea/
+.vscode/
+.kiro/
+
+# Node (jika nanti dipakai)
+node_modules/
+npm-debug.log*

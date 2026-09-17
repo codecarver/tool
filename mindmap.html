@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Mind Map</title>
+    <link rel="stylesheet" href="css/app.css"/>
+</head>
+<body>
+<header class="landing-hero landing-hero-sm">
+    <nav class="landing-nav">
+        <a class="brand" href="index.html">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 21h18"/><path d="M5 21V11l4-3 4 3v10"/><path d="M13 21v-6l4-3 4 3v6"/><path d="M8 21v-4"/>
+            </svg>
+            <span>Tools</span>
+        </a>
+        <div><a class="btn btn-light" href="index.html">Beranda</a></div>
+    </nav>
+    <div class="hero-content">
+        <h1>Mind Map Sederhana</h1>
+        <p>Susun ide dengan drag &amp; drop, ciutkan/perluas cabang, lalu simpan atau impor sebagai file JSON. Semua berjalan di browser Anda.</p>
+    </div>
+</header>
+
+<div class="container">
+    <div class="card">
+        <div class="mm-toolbar">
+            <button class="btn btn-sm" id="mm-export-json">Simpan (JSON)</button>
+            <button class="btn btn-sm" id="mm-export-png">Ekspor Gambar (PNG)</button>
+            <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0">
+                Impor (JSON)
+                <input type="file" id="mm-import" accept=".json,application/json" hidden/>
+            </label>
+            <button class="btn btn-sm btn-danger" id="mm-reset">Reset</button>
+            <button class="btn btn-sm btn-outline" id="mm-mode">Posisi: Auto</button>
+            <span class="mm-zoom-controls">
+                <button class="btn btn-sm btn-outline" id="mm-zoom-out" title="Perkecil">&minus;</button>
+                <span id="mm-zoom-level">100%</span>
+                <button class="btn btn-sm btn-outline" id="mm-zoom-in" title="Perbesar">+</button>
+                <button class="btn btn-sm btn-outline" id="mm-zoom-reset" title="Reset zoom">100%</button>
+            </span>
+        </div>
+        <p style="font-size:0.85rem;color:#52606d;margin:0.5rem 0">
+            Tips: <strong>klik kanan</strong> node untuk menu (tambah anak, ubah teks, tandai selesai, deskripsi, ciutkan, hapus).
+            Klik dua kali teks untuk mengubah cepat — <strong>Enter</strong> baris baru, <strong>Ctrl+Enter</strong>/klik di luar untuk simpan, <strong>Esc</strong> batal.
+            Badge angka pada node = jumlah anak; <strong>klik badge</strong> untuk perluas/ciutkan. Titik biru = ada deskripsi.
+            Mode <strong>Auto</strong> merapikan posisi otomatis; <strong>Manual</strong> bebas seret. Ctrl+seret untuk menggeser panel.
+            Perubahan tersimpan otomatis di browser ini (tetap simpan file JSON untuk cadangan/pindah perangkat).
+        </p>
+        <div id="mm-canvas" class="mm-canvas">
+            <div id="mm-stage" class="mm-stage">
+                <svg id="mm-svg" class="mm-svg" width="1000" height="600"></svg>
+                <div id="mm-nodes" class="mm-nodes"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<footer class="app-footer">
+    <span>Built with love from Darjo, kota autopilot.</span>
+</footer>
+<script src="js/mindmap.js"></script>
+</body>
+</html>

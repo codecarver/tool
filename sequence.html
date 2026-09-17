@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Sequence Diagram</title>
+    <link rel="stylesheet" href="css/app.css"/>
+</head>
+<body>
+<header class="landing-hero landing-hero-sm">
+    <nav class="landing-nav">
+        <a class="brand" href="index.html">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 21h18"/><path d="M5 21V11l4-3 4 3v10"/><path d="M13 21v-6l4-3 4 3v6"/><path d="M8 21v-4"/>
+            </svg>
+            <span>Tools</span>
+        </a>
+        <div><a class="btn btn-light" href="index.html">Beranda</a></div>
+    </nav>
+    <div class="hero-content"><h1>Sequence Diagram</h1>
+        <p>Tulis interaksi di kiri, diagram muncul otomatis di kanan.</p></div>
+</header>
+
+<div class="container">
+    <div class="card">
+        <div class="mm-toolbar">
+            <button class="btn btn-sm" id="sq-export-json">Simpan (JSON)</button>
+            <button class="btn btn-sm" id="sq-export-png">Ekspor Gambar (PNG)</button>
+            <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0">Impor (JSON/TXT)
+                <input type="file" id="sq-import" accept=".json,.txt,application/json,text/plain" hidden/>
+            </label>
+            <button class="btn btn-sm btn-danger" id="sq-reset">Reset</button>
+        </div>
+        <p style="font-size:0.85rem;color:#52606d;margin:0.5rem 0">
+            Format tiap baris: <code>A -&gt; B: Pesan</code> (solid), <code>A --&gt; B: Pesan</code> (putus-putus),
+            <code>A -x B: Pesan</code> (gagal/X). Tambahkan <code>[red]</code> pada pesan untuk garis merah.<br/>
+            Loop ke diri sendiri: <code>A -&gt; A: Proses internal</code>.
+            Judul keseluruhan: <code>title: Judul</code>.
+            Separator: <code>---</code> atau <code>--- teks</code>. Catatan: <code>note: teks</code>.
+            Ganti baris pada pesan: tulis <code>\n</code> (mis. <code>A -&gt; B: baris1\nbaris2</code>).
+            Semua opsional. Perubahan tersimpan otomatis di browser ini.
+        </p>
+        <div class="sq-layout">
+            <textarea id="sq-input" class="sq-input" spellcheck="false"></textarea>
+            <div class="sq-canvas"><svg id="sq-svg" width="600" height="400"></svg></div>
+        </div>
+    </div>
+</div>
+<footer class="app-footer">
+    <span>Built with love from Darjo, kota autopilot.</span>
+</footer>
+<script src="js/sequence.js"></script>
+</body>
+</html>
