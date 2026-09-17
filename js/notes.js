@@ -121,6 +121,11 @@
     // Markdown -> HTML (blok: heading, list, quote, code fence, hr, paragraf)
     function mdToHtml(md) {
         let text = String(md).replace(/\r\n/g, '\n');
+        // Perbaiki code lama: `...` (backtick tunggal) yang membungkus teks MULTI-BARIS
+        // diubah menjadi fenced block ``` agar terender sebagai blok kode, bukan bocor.
+        text = text.replace(/`([^`]*\n[^`]*)`/g, function (_, inner) {
+            return '\n```\n' + inner.replace(/^\n+|\n+$/g, '') + '\n```\n';
+        });
         // Perbaiki span lama yang punya kutip ganda di dalam style (mis. font-family:"Comic Sans MS")
         // yang merusak atribut. Ubah kutip ganda di dalam style menjadi kutip tunggal.
         text = text.replace(/<span style="((?:[^"]|"[^"]*")*?)">/gi, function (m, style) {
@@ -293,6 +298,11 @@
                 }
                 if (c.nodeType !== 1) return;
                 const tag = c.nodeName.toLowerCase();
+                // <code> multi-baris -> fenced block (bukan inline backtick).
+                if (tag === 'code' && /\n/.test(c.textContent)) {
+                    out.push('```'); out.push(c.textContent.replace(/\n$/, '')); out.push('```'); out.push('');
+                    return;
+                }
                 if (/^h[1-6]$/.test(tag)) {
                     out.push('#'.repeat(parseInt(tag[1], 10)) + ' ' + inline(c).trim()); out.push('');
                 } else if (tag === 'p' || tag === 'div') {
@@ -676,13 +686,23 @@
                 editor.focus(); markDirty();
             }
             else if (act === 'code') {
-                // bungkus seleksi dengan <code>
                 const sel = window.getSelection();
                 if (sel && sel.rangeCount && !sel.isCollapsed) {
                     const range = sel.getRangeAt(0);
-                    const code = document.createElement('code');
-                    code.appendChild(range.extractContents());
-                    range.insertNode(code);
+                    const text = range.toString();
+                    if (/\n/.test(text)) {
+                        // Multi-baris -> blok kode <pre> (bukan inline <code>).
+                        const pre = document.createElement('pre');
+                        pre.textContent = text;
+                        range.deleteContents();
+                        range.insertNode(pre);
+                        const after = document.createElement('p'); after.appendChild(document.createElement('br'));
+                        pre.parentNode.insertBefore(after, pre.nextSibling);
+                    } else {
+                        const code = document.createElement('code');
+                        code.appendChild(range.extractContents());
+                        range.insertNode(code);
+                    }
                 }
                 editor.focus();
             }
