@@ -121,11 +121,18 @@
     // Markdown -> HTML (blok: heading, list, quote, code fence, hr, paragraf)
     function mdToHtml(md) {
         let text = String(md).replace(/\r\n/g, '\n');
+        // Lindungi blok fenced ```...``` yang SUDAH benar agar tidak diutak-atik normalisasi di bawah.
+        const fences = [];
+        text = text.replace(/```[\s\S]*?```/g, function (m) {
+            fences.push(m); return '\u0000FENCE' + (fences.length - 1) + '\u0000';
+        });
         // Perbaiki code lama: `...` (backtick tunggal) yang membungkus teks MULTI-BARIS
         // diubah menjadi fenced block ``` agar terender sebagai blok kode, bukan bocor.
         text = text.replace(/`([^`]*\n[^`]*)`/g, function (_, inner) {
             return '\n```\n' + inner.replace(/^\n+|\n+$/g, '') + '\n```\n';
         });
+        // Kembalikan fenced block yang dilindungi.
+        text = text.replace(/\u0000FENCE(\d+)\u0000/g, function (_, i) { return fences[+i]; });
         // Perbaiki span lama yang punya kutip ganda di dalam style (mis. font-family:"Comic Sans MS")
         // yang merusak atribut. Ubah kutip ganda di dalam style menjadi kutip tunggal.
         text = text.replace(/<span style="((?:[^"]|"[^"]*")*?)">/gi, function (m, style) {
