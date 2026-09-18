@@ -76,6 +76,9 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 .hero-cta { margin-top: 1.5rem; display: flex; gap: 0.75rem; flex-wrap: wrap; }
 .landing-hero-sm .hero-content { padding: 1.5rem 1rem 2rem; }
 .landing-hero-sm .hero-content h1 { font-size: 1.6rem; }
+/* Tool sub-page headers (landing-hero-sm) span the full width like the content below */
+.landing-hero-sm .landing-nav,
+.landing-hero-sm .hero-content { max-width: none; margin: 0; padding-left: 1.4rem; padding-right: 1.4rem; }
 
 .btn-light { background: #fff; color: #1f6feb; }
 .btn-ghost { background: transparent; border: 1px solid rgba(255,255,255,0.6); color: #fff; }
