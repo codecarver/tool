@@ -440,16 +440,30 @@
             if (!e.dir && !/\.(md|markdown|txt)$/i.test(e.name)) return;
             const li = document.createElement('li');
             li.className = 'nt-item' + (e.dir ? ' nt-dir' : '');
-            li.textContent = (e.dir ? '📁 ' : '📄 ') + e.name;
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'nt-item-name';
+            nameSpan.textContent = (e.dir ? '📁 ' : '📄 ') + e.name;
+            li.appendChild(nameSpan);
+
             if (e.dir) {
-                li.addEventListener('click', async function () {
+                nameSpan.addEventListener('click', async function () {
                     dirHandle = e.handle;
                     dirStack.push(e.handle);
                     updateUpBtn();
                     await listFolder();
                 });
             } else {
-                li.addEventListener('click', function () { openFile(e.handle, e.name, li); });
+                nameSpan.addEventListener('click', function () { openFile(e.handle, e.name, li); });
+                // Tombol aksi (rename/hapus) untuk file.
+                const act = document.createElement('button');
+                act.className = 'nt-item-act'; act.type = 'button'; act.textContent = '⋯';
+                act.title = 'File actions (rename / delete)';
+                act.addEventListener('click', function (ev) {
+                    ev.stopPropagation();
+                    showFileMenu(ev, e.name, e.handle);
+                });
+                li.appendChild(act);
             }
             treeEl.appendChild(li);
         });
@@ -493,6 +507,78 @@
             const li = Array.prototype.find.call(treeEl.children, function (x) { return x.textContent.indexOf(name) !== -1; });
             openFile(handle, name, li);
         } catch (err) { alert('Failed to create file: ' + err.message); }
+    }
+
+    // ===================== File actions menu (rename / delete) =====================
+    let fileMenuEl = null;
+    function closeFileMenu() {
+        if (fileMenuEl) { fileMenuEl.remove(); fileMenuEl = null; }
+        document.removeEventListener('click', fileMenuOutside);
+    }
+    function fileMenuOutside(e) { if (fileMenuEl && fileMenuEl.contains(e.target)) return; closeFileMenu(); }
+    function showFileMenu(ev, name, handle) {
+        closeFileMenu();
+        const menu = document.createElement('div');
+        menu.className = 'dg-menu';
+        const t = ev.touches ? ev.touches[0] : ev;
+        menu.style.left = (t.clientX + 2) + 'px';
+        menu.style.top = (t.clientY + 2) + 'px';
+        function item(text, onClick) {
+            const b = document.createElement('button');
+            b.type = 'button'; b.textContent = text;
+            b.addEventListener('click', function (e2) { e2.stopPropagation(); closeFileMenu(); onClick(); });
+            menu.appendChild(b);
+        }
+        item('Rename…', function () { renameFile(name, handle); });
+        item('Delete', function () { deleteFile(name, handle); });
+        document.body.appendChild(menu);
+        fileMenuEl = menu;
+        // clamp within viewport (mobile)
+        const r = menu.getBoundingClientRect(), vw = window.innerWidth, vh = window.innerHeight;
+        let left = parseFloat(menu.style.left), top = parseFloat(menu.style.top);
+        if (left + r.width > vw - 6) left = Math.max(6, vw - r.width - 6);
+        if (top + r.height > vh - 6) top = Math.max(6, vh - r.height - 6);
+        menu.style.left = left + 'px'; menu.style.top = top + 'px';
+        setTimeout(function () { document.addEventListener('click', fileMenuOutside); }, 0);
+    }
+
+    // Rename = create a new file with the new name, copy content, remove the old one
+    // (the File System Access API has no native rename).
+    async function renameFile(oldName, handle) {
+        if (!dirHandle) return;
+        let name = prompt('Rename file to:', oldName);
+        if (name === null) return;
+        name = name.trim().replace(/[\\/:*?"<>|]/g, '_');
+        if (!name) return;
+        if (!/\.(md|markdown|txt)$/i.test(name)) name += '.md';
+        if (name === oldName) return;
+        try {
+            const src = await handle.getFile();
+            const content = await src.text();
+            const newHandle = await dirHandle.getFileHandle(name, { create: true });
+            const w = await newHandle.createWritable(); await w.write(content); await w.close();
+            await dirHandle.removeEntry(oldName);
+            // if we renamed the open file, keep it open under the new name
+            if (currentFileName === oldName) { currentFileHandle = newHandle; currentFileName = name; }
+            await listFolder();
+            setStatus('Renamed to ' + name, 'ok');
+        } catch (err) { alert('Failed to rename: ' + err.message); }
+    }
+
+    async function deleteFile(name, handle) {
+        if (!dirHandle) return;
+        if (!confirm('Delete "' + name + '"? This cannot be undone.')) return;
+        try {
+            await dirHandle.removeEntry(name);
+            if (currentFileName === name) {
+                currentFileHandle = null; currentFileName = null;
+                editor.innerHTML = '<p><br></p>'; rawArea.value = '';
+                setStatus('File deleted', 'ok');
+            } else {
+                setStatus('Deleted ' + name, 'ok');
+            }
+            await listFolder();
+        } catch (err) { alert('Failed to delete: ' + err.message); }
     }
 
     // Get the current Markdown, whether we're in raw mode or WYSIWYG mode.
@@ -744,8 +830,13 @@
                 if (sel && sel.rangeCount) { let n = sel.getRangeAt(0).startContainer; while (n && n.parentNode !== editor) n = n.parentNode; anchor = n; }
                 if (anchor && anchor.parentNode === editor) anchor.parentNode.insertBefore(tbl, anchor.nextSibling);
                 else editor.appendChild(tbl);
+                // Always add an editable paragraph after the table so you can keep typing below it.
                 const after = document.createElement('p'); after.appendChild(document.createElement('br'));
                 tbl.parentNode.insertBefore(after, tbl.nextSibling);
+                ensureEditableGaps();
+                // put cursor into the paragraph after the table
+                const rr = document.createRange(); rr.setStart(after, 0); rr.collapse(true);
+                const ss = window.getSelection(); ss.removeAllRanges(); ss.addRange(rr);
                 editor.focus(); markDirty();
             }
             else if (act === 'code') {

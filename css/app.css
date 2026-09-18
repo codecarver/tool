@@ -252,10 +252,16 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 .nt-folder-name { font-size: 0.8rem; font-weight: 600; color: #3e4c59; padding: 0.4rem 0.6rem;
     border-bottom: 1px solid #eef2f6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nt-tree { list-style: none; margin: 0; padding: 0.3rem; overflow: auto; flex: 1; }
-.nt-item { padding: 0.35rem 0.5rem; border-radius: 5px; cursor: pointer; font-size: 0.85rem;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nt-item { padding: 0.35rem 0.5rem; border-radius: 5px; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.25rem; }
 .nt-item:hover { background: #eef3ff; }
 .nt-item.active { background: #1f6feb; color: #fff; }
+.nt-item.active .nt-item-act { color: #fff; }
+.nt-item-name { flex: 1; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nt-item-act { flex: 0 0 auto; border: none; background: transparent; color: #52606d; cursor: pointer;
+    font-size: 1rem; line-height: 1; padding: 0.15rem 0.35rem; border-radius: 4px; opacity: 0.6; }
+.nt-item:hover .nt-item-act { opacity: 1; }
+.nt-item-act:hover { background: rgba(0,0,0,0.08); }
 .nt-empty { padding: 0.5rem; font-size: 0.8rem; color: #9aa5b1; }
 .nt-hint { font-size: 0.72rem; color: #b7791f; padding: 0.5rem; margin: 0; }
 
