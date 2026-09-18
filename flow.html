@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Flow Diagram</title>
-    <link rel="stylesheet" href="css/app.css?v=2"/>
+    <link rel="stylesheet" href="css/app.css?v=3"/>
 </head>
 <body>
 <header class="landing-hero landing-hero-sm">
@@ -45,15 +45,20 @@
                 <button class="btn btn-sm btn-outline" id="dg-zoom-reset">100%</button>
             </span>
         </div>
-        <p style="font-size:0.85rem;color:#52606d;margin:0.5rem 0">
-            Drag a node to move it. <strong>Right-click</strong> a node for the menu (edit text, connect arrow, color, delete).
-            Double-click node text to edit quickly. On a line: drag the <strong>blue handle</strong> to bend it,
-            double-click a line to add a <strong>label</strong>, or <strong>right-click</strong> a line for the menu (label/straighten/curved or elbow style/delete).
-            Use <strong>+ Text</strong> to write free text outside shapes.
-            <strong>Drag on empty space</strong> to select multiple nodes (or <strong>Shift+click</strong> one by one), then right-click &rarr; <strong>Group</strong> to move them together (right-click &rarr; Ungroup to undo).
-            On touch devices, <strong>press and hold</strong> a node or line to open its menu.
-            Use <strong>Open Folder</strong> on the left to work with local <code>.json</code> files (auto-save, rename, delete).
-        </p>
+        <details class="tool-help">
+            <summary>How to use</summary>
+            <div class="tool-help-body">
+                <ul>
+                    <li>Add shapes from the toolbar. Drag a node to move it. Drag the corner handle to resize.</li>
+                    <li><strong>Right-click</strong> a node for its menu (edit text, connect arrow, color, group, delete). Double-click text to edit quickly.</li>
+                    <li>On a line: drag the <strong>blue handle</strong> to bend it, double-click to add a <strong>label</strong>, or <strong>right-click</strong> for the menu (label / straighten / curved or elbow style / delete).</li>
+                    <li>Use <strong>+ Text</strong> to write free text outside shapes.</li>
+                    <li><strong>Drag on empty space</strong> to select multiple nodes (or <strong>Shift+click</strong>), then right-click &rarr; <strong>Group</strong> to move them together (Ungroup to undo).</li>
+                    <li>On touch devices, <strong>press and hold</strong> a node or line to open its menu.</li>
+                    <li>Use <strong>Open Folder</strong> on the left to work with local <code>.json</code> files (auto-save, rename, delete).</li>
+                </ul>
+            </div>
+        </details>
         <div class="dg-wrap">
             <button class="nt-side-toggle" data-sidebar-toggle title="Show/hide file explorer">☰ Files</button>
             <aside class="nt-sidebar">
@@ -81,8 +86,8 @@
 <footer class="app-footer">
     <span>Built with love from Darjo, kota autopilot.</span>
 </footer>
-<script src="js/fs-explorer.js?v=2"></script>
-<script src="js/diagram-core.js?v=2"></script>
+<script src="js/fs-explorer.js?v=3"></script>
+<script src="js/diagram-core.js?v=3"></script>
 <script>
     createDiagram({
         storageKey: 'tools.flow.v1', fileBase: 'flow',
@@ -118,6 +123,6 @@
         }
     });
 </script>
-<script src="js/sidebar-toggle.js?v=2"></script>
+<script src="js/sidebar-toggle.js?v=3"></script>
 </body>
 </html>

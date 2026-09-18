@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Notes (Markdown)</title>
-    <link rel="stylesheet" href="css/app.css?v=2"/>
+    <link rel="stylesheet" href="css/app.css?v=3"/>
 </head>
 <body>
 <header class="landing-hero landing-hero-sm">
@@ -24,6 +24,20 @@
 
 <div class="container container-full">
     <div class="card">
+        <details class="tool-help">
+            <summary>How to use</summary>
+            <div class="tool-help-body">
+                <ul>
+                    <li>Click <strong>Open Folder</strong> to pick a local folder. <code>.md</code>/<code>.txt</code> files appear on the left; click a file to open, or use the <strong>⋯</strong> button to rename/delete.</li>
+                    <li>Type to edit. Toolbar formatting (bold/italic/heading/list) is stored as Markdown.</li>
+                    <li>Inside a list, press <strong>Tab</strong> to nest a sub-list and <strong>Shift+Tab</strong> to go up a level.</li>
+                    <li><strong>Multi-line code block</strong>: click <strong>▤ Code</strong> (or select text then click). Inside it, <strong>Enter</strong> = new line, <strong>Tab</strong> = 2 spaces, <strong>Enter on an empty line</strong> exits the block.</li>
+                    <li>Also: <strong>text color</strong> &amp; <strong>highlight</strong> (select text first), <strong>date/time</strong>, <strong>collapsible</strong> sections, <strong>tables</strong>, and <strong>PDF export</strong>.</li>
+                    <li>Use <strong>Raw</strong> to view/fix the underlying Markdown (<strong>Wrap</strong> toggles word wrap). A literal <code>&lt;br&gt;</code> renders as a line break.</li>
+                    <li><strong>Auto-save</strong> writes back to the file automatically. Requires a Chromium-based browser (Chrome/Edge) for folder access.</li>
+                </ul>
+            </div>
+        </details>
         <div class="nt-layout">
             <!-- Sidebar explorer -->
             <button class="nt-side-toggle" data-sidebar-toggle title="Show/hide file explorer">☰ Files</button>
@@ -101,21 +115,12 @@
                 <textarea class="nt-raw" id="nt-raw-area" spellcheck="false" style="display:none"></textarea>
             </section>
         </div>
-        <p style="font-size:0.82rem;color:#52606d;margin:0.6rem 0 0">
-            Click <strong>Open Folder</strong> to pick a local folder (the browser will ask for permission). <code>.md</code>/<code>.txt</code> files
-            appear on the left. Click a file to open; use the <strong>⋯</strong> button next to a file to rename or delete it. Type to edit. Toolbar formatting (bold/italic/heading/list) is stored as Markdown.
-            Inside a list, press <strong>Tab</strong> to create a sub-list (nested) and <strong>Shift+Tab</strong> to go up a level.
-            For a <strong>multi-line code block</strong>: click <strong>▤ Code</strong> (or select multi-line text then click). Inside the block, <strong>Enter</strong> = new line, <strong>Tab</strong> = 2 spaces, and <strong>Enter on an empty line</strong> exits the block.
-            There is also <strong>text color</strong> &amp; <strong>highlight</strong> (select text first), insert <strong>date/time</strong>, a <strong>collapsible</strong> section, <strong>tables</strong>, and <strong>PDF export</strong>.
-            Use <strong>Raw</strong> to view/fix the underlying Markdown directly (<strong>Wrap</strong> toggles word wrap there). A literal <code>&lt;br&gt;</code> in text renders as a line break.
-            <strong>Auto-save</strong> writes back to the file automatically. Requires a Chromium-based browser (Chrome/Edge) for folder access.
-        </p>
     </div>
 </div>
 <footer class="app-footer">
     <span>Built with love from Darjo, kota autopilot.</span>
 </footer>
-<script src="js/notes.js?v=2"></script>
-<script src="js/sidebar-toggle.js?v=2"></script>
+<script src="js/notes.js?v=3"></script>
+<script src="js/sidebar-toggle.js?v=3"></script>
 </body>
 </html>

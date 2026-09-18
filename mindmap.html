@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Mind Map</title>
-    <link rel="stylesheet" href="css/app.css?v=2"/>
+    <link rel="stylesheet" href="css/app.css?v=3"/>
 </head>
 <body>
 <header class="landing-hero landing-hero-sm">
@@ -42,14 +42,19 @@
                 <button class="btn btn-sm btn-outline" id="mm-zoom-reset" title="Reset zoom">100%</button>
             </span>
         </div>
-        <p style="font-size:0.85rem;color:#52606d;margin:0.5rem 0">
-            Tips: <strong>right-click</strong> a node for the menu (add child, edit text, mark done, description, collapse, delete).
-            Double-click text to edit quickly — <strong>Enter</strong> for a new line, <strong>Ctrl+Enter</strong>/click outside to save, <strong>Esc</strong> to cancel.
-            The number badge on a node = child count; <strong>click the badge</strong> to expand/collapse. A blue dot = has a description.
-            <strong>Auto</strong> layout tidies positions automatically; <strong>Manual</strong> lets you drag freely. Ctrl+drag to pan the canvas.
-            On touch devices, <strong>press and hold</strong> a node to open its menu; use the zoom buttons to zoom.
-            Use <strong>Open Folder</strong> on the left to work with local <code>.json</code> files (auto-save, rename, delete).
-        </p>
+        <details class="tool-help">
+            <summary>How to use</summary>
+            <div class="tool-help-body">
+                <ul>
+                    <li><strong>Right-click</strong> a node for its menu (add child, edit text, mark done, description, collapse, delete).</li>
+                    <li>Double-click text to edit — <strong>Enter</strong> for a new line, <strong>Ctrl+Enter</strong> or click outside to save, <strong>Esc</strong> to cancel.</li>
+                    <li>The number badge = child count; <strong>click the badge</strong> to expand/collapse. A blue dot means the node has a description.</li>
+                    <li><strong>Auto</strong> layout tidies positions automatically; <strong>Manual</strong> lets you drag freely. <strong>Ctrl+drag</strong> to pan.</li>
+                    <li>On touch devices, <strong>press and hold</strong> a node to open its menu.</li>
+                    <li>Use <strong>Open Folder</strong> on the left to work with local <code>.json</code> files (auto-save, rename, delete).</li>
+                </ul>
+            </div>
+        </details>
         <div class="dg-wrap">
             <button class="nt-side-toggle" data-sidebar-toggle title="Show/hide file explorer">☰ Files</button>
             <aside class="nt-sidebar">
@@ -77,8 +82,8 @@
 <footer class="app-footer">
     <span>Built with love from Darjo, kota autopilot.</span>
 </footer>
-<script src="js/fs-explorer.js?v=2"></script>
-<script src="js/mindmap.js?v=2"></script>
-<script src="js/sidebar-toggle.js?v=2"></script>
+<script src="js/fs-explorer.js?v=3"></script>
+<script src="js/mindmap.js?v=3"></script>
+<script src="js/sidebar-toggle.js?v=3"></script>
 </body>
 </html>

@@ -192,6 +192,21 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
     .dg-wrap .nt-sidebar, .sq-wrap .nt-sidebar { flex: 0 0 auto; height: auto; max-height: 200px; }
 }
 
+/* ===== "How to use" help panel (collapsible, uniform across tools) ===== */
+.tool-help { margin: 0 0 0.75rem; border: 1px solid #d3dce6; border-radius: 8px; background: #f7f9fb;
+    font-size: 0.85rem; color: #3e4c59; }
+.tool-help > summary { cursor: pointer; list-style: none; padding: 0.55rem 0.9rem; font-weight: 600;
+    color: #1f2933; display: flex; align-items: center; gap: 0.5rem; border-radius: 8px; user-select: none; }
+.tool-help > summary::-webkit-details-marker { display: none; }
+.tool-help > summary::before { content: '▸'; color: #1f6feb; transition: transform 0.15s; }
+.tool-help[open] > summary::before { transform: rotate(90deg); }
+.tool-help > summary:hover { background: #eef3ff; }
+.tool-help .tool-help-body { padding: 0.2rem 1rem 0.8rem; line-height: 1.6; }
+.tool-help ul { margin: 0.3rem 0 0.3rem 1.1rem; padding: 0; }
+.tool-help li { margin: 0.15rem 0; }
+.tool-help code { background: #e4e7eb; padding: 0.05rem 0.3rem; border-radius: 3px;
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.9em; }
+
 /* ===== Collapsible file-explorer sidebar (all tools) ===== */
 .nt-layout { position: relative; }
 /* Small "«" button inside the sidebar header to collapse it */

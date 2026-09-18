@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Sequence Diagram</title>
-    <link rel="stylesheet" href="css/app.css?v=2"/>
+    <link rel="stylesheet" href="css/app.css?v=3"/>
 </head>
 <body>
 <header class="landing-hero landing-hero-sm">
@@ -32,15 +32,18 @@
             </label>
             <button class="btn btn-sm btn-danger" id="sq-reset">Reset</button>
         </div>
-        <p style="font-size:0.85rem;color:#52606d;margin:0.5rem 0">
-            Format per line: <code>A -&gt; B: Message</code> (solid), <code>A --&gt; B: Message</code> (dashed),
-            <code>A -x B: Message</code> (failed/X). Add <code>[red]</code> to a message for a red line.<br/>
-            Self-loop: <code>A -&gt; A: Internal process</code>.
-            Overall title: <code>title: Title</code>.
-            Separator: <code>---</code> or <code>--- text</code>. Note: <code>note: text</code>.
-            Line break in a message: type <code>\n</code> (e.g. <code>A -&gt; B: line1\nline2</code>).
-            All optional. Use <strong>Open Folder</strong> on the left to work with local <code>.json</code> files (auto-save, rename, delete).
-        </p>
+        <details class="tool-help">
+            <summary>How to use</summary>
+            <div class="tool-help-body">
+                <ul>
+                    <li><code>A -&gt; B: Message</code> = solid arrow, <code>A --&gt; B: Message</code> = dashed, <code>A -x B: Message</code> = failed (X).</li>
+                    <li>Add <code>[red]</code> to a message for a red line. Self-loop: <code>A -&gt; A: Internal process</code>.</li>
+                    <li>Overall title: <code>title: Title</code>. Separator: <code>---</code> or <code>--- text</code>. Note: <code>note: text</code>.</li>
+                    <li>Line break in a message: type <code>\n</code> (e.g. <code>A -&gt; B: line1\nline2</code>). All syntax is optional.</li>
+                    <li>Use <strong>Open Folder</strong> on the left to work with local <code>.json</code> files (auto-save, rename, delete).</li>
+                </ul>
+            </div>
+        </details>
         <div class="sq-wrap">
             <button class="nt-side-toggle" data-sidebar-toggle title="Show/hide file explorer">☰ Files</button>
             <aside class="nt-sidebar">
@@ -66,8 +69,8 @@
 <footer class="app-footer">
     <span>Built with love from Darjo, kota autopilot.</span>
 </footer>
-<script src="js/fs-explorer.js?v=2"></script>
-<script src="js/sequence.js?v=2"></script>
-<script src="js/sidebar-toggle.js?v=2"></script>
+<script src="js/fs-explorer.js?v=3"></script>
+<script src="js/sequence.js?v=3"></script>
+<script src="js/sidebar-toggle.js?v=3"></script>
 </body>
 </html>
