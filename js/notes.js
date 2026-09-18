@@ -653,7 +653,27 @@
 
     // Pastikan setiap <details> tingkat atas punya paragraf setelahnya, dan editor diakhiri
     // paragraf kosong — supaya kursor bisa keluar dari collapsible dan menulis di bawahnya.
+    // Convert a literal "<br>" / "<br/>" typed as text into a real line break element.
+    function convertLiteralBr(root) {
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+        const targets = [];
+        let n;
+        while ((n = walker.nextNode())) {
+            if (/<br\s*\/?>/i.test(n.nodeValue)) targets.push(n);
+        }
+        targets.forEach(function (tn) {
+            const parts = tn.nodeValue.split(/<br\s*\/?>/i);
+            const frag = document.createDocumentFragment();
+            parts.forEach(function (part, idx) {
+                if (part) frag.appendChild(document.createTextNode(part));
+                if (idx < parts.length - 1) frag.appendChild(document.createElement('br'));
+            });
+            tn.parentNode.replaceChild(frag, tn);
+        });
+    }
+
     function ensureEditableGaps() {
+        convertLiteralBr(editor); // typed "<br>" -> real break
         // Blok yang butuh paragraf editable setelahnya agar kursor bisa keluar & menulis di bawahnya.
         const BLOCKS = ['DETAILS', 'PRE', 'TABLE', 'UL', 'OL', 'BLOCKQUOTE', 'HR'];
         function newP() { const p = document.createElement('p'); p.appendChild(document.createElement('br')); return p; }
@@ -943,6 +963,8 @@
 
     function markDirty() { dirty = true; setStatus('Unsaved…'); scheduleAutoSave(); }
     editor.addEventListener('input', markDirty);
+    // Convert any typed literal "<br>" into a real line break when focus leaves the editor.
+    editor.addEventListener('blur', function () { convertLiteralBr(editor); });
 
     // Shortcut: Ctrl+S simpan, Ctrl+B/I sudah default contenteditable
     document.addEventListener('keydown', function (e) {
