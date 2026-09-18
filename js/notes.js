@@ -16,6 +16,7 @@
     const btnSave = document.getElementById('nt-save');
     const rawArea = document.getElementById('nt-raw-area');
     const btnRaw = document.getElementById('nt-raw');
+    const btnWrap = document.getElementById('nt-wrap');
 
     const hasFS = !!(window.showDirectoryPicker);
 
@@ -51,6 +52,8 @@
         t = t.replace(/(^|[^*])\*([^*]+)\*/g, '$1<i>$2</i>');
         t = t.replace(/~~([^~]+)~~/g, '<s>$1</s>');
         t = t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+        // Allow a literal <br> / <br/> written by the user to render as a line break.
+        t = t.replace(/&lt;br\s*\/?&gt;/gi, '<br>');
         return t; // placeholder \u0000RS..\u0000 dipulihkan di akhir mdToHtml
     }
     // Ekstrak span gaya (color/background/font-family) TERLUAR dengan memperhatikan
@@ -1008,6 +1011,14 @@
     document.getElementById('nt-pdf').addEventListener('click', exportPdf);
     btnRaw.addEventListener('click', function () { setRawMode(!rawMode); });
     rawArea.addEventListener('input', function () { dirty = true; setStatus('Unsaved…'); scheduleAutoSave(); });
+    // Word-wrap toggle for the Raw textarea (default wrapped for readability).
+    let rawWrap = true;
+    function applyWrap() {
+        rawArea.classList.toggle('nowrap', !rawWrap);
+        btnWrap.classList.toggle('active', rawWrap);
+    }
+    btnWrap.addEventListener('click', function () { rawWrap = !rawWrap; applyWrap(); });
+    applyWrap();
 
     // Export to PDF: open a print window with the editor content + styles, then print (Save as PDF).
     function exportPdf() {
