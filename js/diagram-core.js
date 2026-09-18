@@ -835,7 +835,7 @@ window.createDiagram = function (opts) {
 
     // batal mode hubungkan dengan klik kosong / Esc
     canvas.addEventListener('click', function (e) {
-        if (e.target === canvas || e.target === stage || e.target === svg) {
+        if (e.target === canvas || e.target === stage || e.target === svg || e.target === nodesLayer) {
             connectFrom = null; canvas.classList.remove('dg-linking');
             const l = nodesLayer.querySelector('.linking'); if (l) l.classList.remove('linking');
             // klik area kosong tanpa Shift: kosongkan pilihan
@@ -889,8 +889,9 @@ window.createDiagram = function (opts) {
         function down(e) {
             if (e.button && e.button !== 0) return;      // hanya klik kiri
             if (e.ctrlKey || e.metaKey) return;          // Ctrl = pan
-            // hanya mulai di area kosong (bukan di atas node/handle/garis)
-            if (!(e.target === canvas || e.target === stage || e.target === svg)) return;
+            // hanya mulai di area kosong (bukan di atas node/handle/garis).
+            // nodesLayer (#dg-nodes) menutupi seluruh stage, jadi klik kosong sering mengenainya.
+            if (!(e.target === canvas || e.target === stage || e.target === svg || e.target === nodesLayer)) return;
             active = true;
             additive = e.shiftKey;                        // Shift = tambah ke pilihan lama
             const p = stageXY(e); sx = p.x; sy = p.y;
