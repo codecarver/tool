@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -16,30 +16,30 @@
             </svg>
             <span>Tools</span>
         </a>
-        <div><a class="btn btn-light" href="index.html">Beranda</a></div>
+        <div><a class="btn btn-light" href="index.html">Home</a></div>
     </nav>
     <div class="hero-content"><h1>Sequence Diagram</h1>
-        <p>Tulis interaksi di kiri, diagram muncul otomatis di kanan.</p></div>
+        <p>Write interactions on the left, the diagram renders automatically on the right.</p></div>
 </header>
 
 <div class="container">
     <div class="card">
         <div class="mm-toolbar">
-            <button class="btn btn-sm" id="sq-export-json">Simpan (JSON)</button>
-            <button class="btn btn-sm" id="sq-export-png">Ekspor Gambar (PNG)</button>
-            <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0">Impor (JSON/TXT)
+            <button class="btn btn-sm" id="sq-export-json">Save (JSON)</button>
+            <button class="btn btn-sm" id="sq-export-png">Export Image (PNG)</button>
+            <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0">Import (JSON/TXT)
                 <input type="file" id="sq-import" accept=".json,.txt,application/json,text/plain" hidden/>
             </label>
             <button class="btn btn-sm btn-danger" id="sq-reset">Reset</button>
         </div>
         <p style="font-size:0.85rem;color:#52606d;margin:0.5rem 0">
-            Format tiap baris: <code>A -&gt; B: Pesan</code> (solid), <code>A --&gt; B: Pesan</code> (putus-putus),
-            <code>A -x B: Pesan</code> (gagal/X). Tambahkan <code>[red]</code> pada pesan untuk garis merah.<br/>
-            Loop ke diri sendiri: <code>A -&gt; A: Proses internal</code>.
-            Judul keseluruhan: <code>title: Judul</code>.
-            Separator: <code>---</code> atau <code>--- teks</code>. Catatan: <code>note: teks</code>.
-            Ganti baris pada pesan: tulis <code>\n</code> (mis. <code>A -&gt; B: baris1\nbaris2</code>).
-            Semua opsional. Perubahan tersimpan otomatis di browser ini.
+            Format per line: <code>A -&gt; B: Message</code> (solid), <code>A --&gt; B: Message</code> (dashed),
+            <code>A -x B: Message</code> (failed/X). Add <code>[red]</code> to a message for a red line.<br/>
+            Self-loop: <code>A -&gt; A: Internal process</code>.
+            Overall title: <code>title: Title</code>.
+            Separator: <code>---</code> or <code>--- text</code>. Note: <code>note: text</code>.
+            Line break in a message: type <code>\n</code> (e.g. <code>A -&gt; B: line1\nline2</code>).
+            All optional. Changes are auto-saved in this browser.
         </p>
         <div class="sq-layout">
             <textarea id="sq-input" class="sq-input" spellcheck="false"></textarea>

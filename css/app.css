@@ -277,6 +277,11 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 
 .nt-editor { flex: 1; padding: 1rem 1.2rem; overflow-y: auto; overflow-x: auto; outline: none; line-height: 1.6;
     font-size: 1rem; color: #1f2933; background: #fff; min-height: 0; }
+/* Raw Markdown source textarea */
+.nt-raw { flex: 1; min-height: 0; width: 100%; border: none; outline: none; resize: none;
+    padding: 1rem 1.2rem; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.9rem;
+    line-height: 1.55; color: #1f2933; background: #fbfdff; white-space: pre; }
+#nt-raw.active { background: #1f6feb; color: #fff; border-color: #1f6feb; }
 .nt-editor:focus { outline: none; }
 .nt-editor h1 { font-size: 1.6rem; margin: 0.6rem 0 0.4rem; }
 .nt-editor h2 { font-size: 1.35rem; margin: 0.6rem 0 0.4rem; }
@@ -317,4 +322,62 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 @media (max-width: 760px) {
     .nt-layout { flex-direction: column; }
     .nt-sidebar { flex: 0 0 auto; max-height: 220px; }
+}
+
+/* ===== Mobile-friendly tweaks for tools ===== */
+@media (max-width: 760px) {
+    .container-wide, .container { padding: 0 0.6rem; margin: 0.8rem auto; }
+    .card { padding: 0.75rem; }
+
+    /* Toolbars: keep buttons compact & scrollable instead of full-width stacking */
+    .mm-toolbar, .nt-toolbar {
+        gap: 0.35rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: wrap;
+    }
+    .mm-toolbar .btn, .mm-toolbar button, .nt-toolbar .btn, .nt-toolbar button {
+        width: auto; margin: 0; flex: 0 0 auto;
+        min-height: 38px; /* comfortable touch target */
+    }
+    .mm-toolbar .btn-sm, .nt-toolbar .btn-sm { padding: 0.45rem 0.6rem; font-size: 0.9rem; }
+    .nt-toolbar select { min-height: 38px; }
+
+    /* Zoom controls stay inline, don't push to a new full-width row */
+    .mm-zoom-controls { margin-left: 0; }
+
+    /* Canvas: use most of the viewport height, allow touch panning */
+    .mm-canvas { height: 68vh; touch-action: pan-x pan-y; }
+
+    /* Notes: stack sidebar above editor; give editor room */
+    .nt-layout { flex-direction: column; height: auto; }
+    .nt-sidebar { flex: 0 0 auto; max-height: 200px; }
+    .nt-main { min-height: 60vh; }
+    .nt-editor, .nt-raw { min-height: 55vh; }
+
+    /* Context menus & dropdowns: bigger tap targets, fit within screen */
+    .dg-menu { min-width: 180px; max-width: calc(100vw - 20px); }
+    .dg-menu button { padding: 0.7rem 0.9rem; font-size: 0.95rem; }
+    .nt-dd-menu { max-width: calc(100vw - 20px); }
+    .nt-date-item { padding: 0.6rem 0.7rem; }
+    .nt-swatch, .dg-swatch-btn { width: 28px; height: 28px; }
+
+    /* Diagram node action affordances a bit larger for touch */
+    .dg-resize { width: 16px; height: 16px; right: -7px; bottom: -7px; }
+
+    /* Sequence diagram: stack text input above the rendered canvas */
+    .sq-layout { flex-direction: column; }
+    .sq-input { min-height: 180px; }
+    .sq-canvas { min-height: 300px; }
+
+    /* Mind map modal fits small screens */
+    .mm-modal { width: calc(100vw - 24px); max-height: 85vh; }
+
+    .hero-content { padding: 1rem 0.8rem 1.4rem; }
+    .hero-content h1 { font-size: 1.4rem; }
+}
+
+/* Prevent the browser's default touch callout/selection interfering with long-press menus */
+.mm-node, .dg-node, #dg-svg g, #mm-svg g {
+    -webkit-touch-callout: none;
 }

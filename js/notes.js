@@ -14,19 +14,22 @@
     const btnNew = document.getElementById('nt-new-file');
     const btnRefresh = document.getElementById('nt-refresh');
     const btnSave = document.getElementById('nt-save');
+    const rawArea = document.getElementById('nt-raw-area');
+    const btnRaw = document.getElementById('nt-raw');
 
     const hasFS = !!(window.showDirectoryPicker);
 
     // ===================== State =====================
-    let dirHandle = null;          // FileSystemDirectoryHandle folder aktif
-    let dirStack = [];             // rantai folder dari root -> folder aktif (untuk "naik level")
-    let currentFileHandle = null;  // file yang sedang dibuka
+    let dirHandle = null;          // active FileSystemDirectoryHandle
+    let dirStack = [];             // folder chain root -> current (for "go up")
+    let currentFileHandle = null;  // currently open file
     let currentFileName = null;
     let dirty = false;
     let saveTimer = null;
+    let rawMode = false;           // true = editing raw Markdown in the textarea
 
     if (!hasFS) {
-        fsHint.textContent = 'Browser ini tidak mendukung akses folder lokal. Gunakan Chrome/Edge untuk fitur explorer & auto-save.';
+        fsHint.textContent = 'This browser does not support local folder access. Use Chrome/Edge for the explorer & auto-save features.';
     }
 
     // ===================== Util status =====================
@@ -160,7 +163,7 @@
                 i++;
                 while (i < lines.length && !/^<\/details>/i.test(lines[i].trim())) { buf.push(lines[i]); i++; }
                 i++; // lewati </details>
-                let summary = 'Bagian';
+                let summary = 'Section';
                 const inner = [];
                 buf.forEach(function (b) {
                     const sm = b.trim().match(/^<summary>(.*)<\/summary>$/i);
@@ -366,7 +369,7 @@
                     }
                 } else if (tag === 'details') {
                     const sum = c.querySelector(':scope > summary');
-                    const summaryText = sum ? inline(sum).trim() : 'Bagian';
+                    const summaryText = sum ? inline(sum).trim() : 'Section';
                     // isi selain summary
                     const clone = c.cloneNode(true);
                     const s2 = clone.querySelector(':scope > summary'); if (s2) s2.remove();
@@ -388,11 +391,11 @@
 
     // ===================== Explorer folder (File System Access API) =====================
     async function openFolder() {
-        if (!hasFS) { alert('Browser tidak mendukung akses folder. Gunakan Chrome/Edge.'); return; }
+        if (!hasFS) { alert('This browser does not support folder access. Use Chrome/Edge.'); return; }
         try {
             dirHandle = await window.showDirectoryPicker();
-        } catch (err) { if (err && err.name === 'AbortError') return; alert('Gagal membuka folder: ' + err.message); return; }
-        dirStack = [dirHandle]; // root baru
+        } catch (err) { if (err && err.name === 'AbortError') return; alert('Failed to open folder: ' + err.message); return; }
+        dirStack = [dirHandle]; // new root
         folderNameEl.textContent = dirHandle.name;
         btnNew.disabled = false; btnRefresh.disabled = false;
         updateUpBtn();
@@ -400,12 +403,12 @@
     }
 
     function updateUpBtn() {
-        // Tombol Up selalu aktif setelah ada folder dibuka:
-        //  - bila di subfolder: naik ke induk dalam stack,
-        //  - bila sudah di root yang dipilih: buka pemilih folder lagi (API tak bisa naik di atas root).
+        // Up button is active once a folder is open:
+        //  - in a subfolder: go up to the parent in the stack,
+        //  - at the granted root: reopen the folder picker (API cannot go above the root).
         document.getElementById('nt-up').disabled = !dirHandle;
         const up = document.getElementById('nt-up');
-        up.title = dirStack.length > 1 ? 'Naik satu level' : 'Sudah di folder teratas — klik untuk memilih folder lain';
+        up.title = dirStack.length > 1 ? 'Go up one level' : 'At the top folder — click to pick another folder';
         folderNameEl.textContent = dirStack.map(function (h) { return h.name; }).join(' / ') || (dirHandle ? dirHandle.name : '');
     }
 
@@ -452,7 +455,7 @@
         });
         if (!treeEl.children.length) {
             const li = document.createElement('li');
-            li.className = 'nt-empty'; li.textContent = 'Tidak ada file .md/.txt';
+            li.className = 'nt-empty'; li.textContent = 'No .md/.txt files';
             treeEl.appendChild(li);
         }
     }
@@ -463,18 +466,22 @@
             const file = await handle.getFile();
             const text = await file.text();
             currentFileHandle = handle; currentFileName = name;
-            editor.innerHTML = mdToHtml(text) || '<p><br></p>';
-            ensureEditableGaps();
-            dirty = false; setStatus('Dibuka: ' + name);
-            // highlight aktif
+            if (rawMode) {
+                rawArea.value = text;
+            } else {
+                editor.innerHTML = mdToHtml(text) || '<p><br></p>';
+                ensureEditableGaps();
+            }
+            dirty = false; setStatus('Opened: ' + name);
+            // active highlight
             treeEl.querySelectorAll('.nt-item.active').forEach(function (x) { x.classList.remove('active'); });
             if (li) li.classList.add('active');
-        } catch (err) { alert('Gagal membuka file: ' + err.message); }
+        } catch (err) { alert('Failed to open file: ' + err.message); }
     }
 
     async function newFile() {
         if (!dirHandle) return;
-        let name = prompt('Nama file baru (mis. catatan.md):', 'catatan-baru.md');
+        let name = prompt('New file name (e.g. notes.md):', 'new-note.md');
         if (!name) return;
         name = name.trim().replace(/[\\/:*?"<>|]/g, '_');
         if (!/\.(md|markdown|txt)$/i.test(name)) name += '.md';
@@ -482,26 +489,31 @@
             const handle = await dirHandle.getFileHandle(name, { create: true });
             const w = await handle.createWritable(); await w.write('# ' + name.replace(/\.[^.]+$/, '') + '\n\n'); await w.close();
             await listFolder();
-            // buka file baru
+            // open the new file
             const li = Array.prototype.find.call(treeEl.children, function (x) { return x.textContent.indexOf(name) !== -1; });
             openFile(handle, name, li);
-        } catch (err) { alert('Gagal membuat file: ' + err.message); }
+        } catch (err) { alert('Failed to create file: ' + err.message); }
+    }
+
+    // Get the current Markdown, whether we're in raw mode or WYSIWYG mode.
+    function currentMarkdown() {
+        return rawMode ? rawArea.value : htmlToMd(editor);
     }
 
     async function saveNow() {
-        if (!currentFileHandle) { return saveAs(); } // belum ada file -> tawarkan Simpan sebagai
+        if (!currentFileHandle) { return saveAs(); } // no file yet -> offer Save As
         try {
-            const md = htmlToMd(editor);
+            const md = currentMarkdown();
             const w = await currentFileHandle.createWritable();
             await w.write(md); await w.close();
-            dirty = false; setStatus('Tersimpan • ' + new Date().toLocaleTimeString(), 'ok');
-        } catch (err) { setStatus('Gagal simpan: ' + err.message, 'warn'); }
+            dirty = false; setStatus('Saved \u2022 ' + new Date().toLocaleTimeString(), 'ok');
+        } catch (err) { setStatus('Save failed: ' + err.message, 'warn'); }
     }
 
-    // Simpan sebagai file baru. Pakai showSaveFilePicker bila ada; jika tidak, unduh berkas.
+    // Save as a new file. Use showSaveFilePicker when available; otherwise download.
     async function saveAs() {
-        const md = htmlToMd(editor);
-        const suggested = currentFileName || 'catatan.md';
+        const md = currentMarkdown();
+        const suggested = currentFileName || 'notes.md';
         if (window.showSaveFilePicker) {
             try {
                 const handle = await window.showSaveFilePicker({
@@ -510,13 +522,13 @@
                 });
                 const w = await handle.createWritable(); await w.write(md); await w.close();
                 currentFileHandle = handle; currentFileName = handle.name;
-                dirty = false; setStatus('Tersimpan sebagai ' + handle.name, 'ok');
-                if (dirHandle) listFolder(); // segarkan daftar bila file baru di folder aktif
+                dirty = false; setStatus('Saved as ' + handle.name, 'ok');
+                if (dirHandle) listFolder(); // refresh list if the new file is in the active folder
                 return;
             } catch (err) { if (err && err.name === 'AbortError') return; }
         }
-        // Fallback: prompt nama lalu unduh
-        let name = prompt('Simpan sebagai (nama file):', suggested);
+        // Fallback: prompt for name then download
+        let name = prompt('Save as (file name):', suggested);
         if (name === null) return;
         name = (name.trim() || suggested).replace(/[\\/:*?"<>|]/g, '_');
         if (!/\.(md|markdown|txt)$/i.test(name)) name += '.md';
@@ -524,7 +536,7 @@
         const url = URL.createObjectURL(blob); const a = document.createElement('a');
         a.href = url; a.download = name; document.body.appendChild(a); a.click();
         document.body.removeChild(a); URL.revokeObjectURL(url);
-        setStatus('Diunduh: ' + name, 'ok');
+        setStatus('Downloaded: ' + name, 'ok');
     }
 
     function scheduleAutoSave() {
@@ -554,6 +566,30 @@
         }
     }
 
+    // ===================== Raw Markdown toggle =====================
+    // Lets you view/fix the underlying Markdown directly (useful to repair spacing/blocks).
+    function setRawMode(on) {
+        if (on === rawMode) return;
+        if (on) {
+            rawArea.value = htmlToMd(editor);
+            editor.style.display = 'none';
+            rawArea.style.display = '';
+            btnRaw.classList.add('active');
+            rawArea.focus();
+        } else {
+            editor.innerHTML = mdToHtml(rawArea.value) || '<p><br></p>';
+            ensureEditableGaps();
+            rawArea.style.display = 'none';
+            editor.style.display = '';
+            btnRaw.classList.remove('active');
+            editor.focus();
+        }
+        rawMode = on;
+        // disable formatting toolbar buttons while in raw mode
+        document.querySelectorAll('#nt-toolbar button[data-cmd], #nt-toolbar button[data-act], #nt-block, #nt-font, #nt-color-btn, #nt-hilite-btn, #nt-date-btn')
+            .forEach(function (b) { b.disabled = on; });
+    }
+
     // ===================== Editor & toolbar =====================
     function exec(cmd, val) { document.execCommand(cmd, false, val || null); editor.focus(); }
 
@@ -578,8 +614,8 @@
     // Terapkan warna teks / latar pada seleksi menggunakan span.
     function applyColor(kind, color) {
         const sel = window.getSelection();
-        if (!sel || !sel.rangeCount || sel.isCollapsed) { setStatus('Pilih teks dulu untuk memberi warna', 'warn'); return; }
-        // Gunakan execCommand bila memungkinkan (foreColor/hiliteColor menghasilkan span/font).
+        if (!sel || !sel.rangeCount || sel.isCollapsed) { setStatus('Select some text first to apply color', 'warn'); return; }
+        // Use execCommand when possible (foreColor/hiliteColor produce span/font).
         editor.focus();
         if (kind === 'text') {
             document.execCommand('styleWithCSS', false, true);
@@ -616,11 +652,11 @@
         const d = new Date();
         const pad = function (n) { return String(n).padStart(2, '0'); };
         const dd = pad(d.getDate()), mm = pad(d.getMonth() + 1), yyyy = d.getFullYear();
-        const long = d.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        const longTime = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-        const medium = d.toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' });
+        const long = d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        const longTime = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        const medium = d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
         return [
-            long + ' pukul ' + longTime,
+            long + ' at ' + longTime,
             long,
             medium + ', ' + longTime,
             medium,
@@ -651,13 +687,13 @@
     document.querySelectorAll('#nt-toolbar button[data-act]').forEach(function (b) {
         b.addEventListener('click', function () {
             const act = b.getAttribute('data-act');
-            if (act === 'link') { const url = prompt('URL tautan:', 'https://'); if (url) exec('createLink', url); }
+            if (act === 'link') { const url = prompt('Link URL:', 'https://'); if (url) exec('createLink', url); }
             else if (act === 'hr') { exec('insertHorizontalRule'); }
             else if (act === 'details') {
                 // Sisipkan bagian collapsible SEBAGAI blok tingkat atas (bukan di dalam <p>),
                 // agar tersimpan & terbaca ulang dengan benar.
                 const sel = window.getSelection();
-                let innerHtml = '<p>Isi bagian…</p>';
+                let innerHtml = '<p>Section content…</p>';
                 if (sel && sel.rangeCount && !sel.isCollapsed) {
                     const frag = sel.getRangeAt(0).extractContents();
                     const tmp = document.createElement('div'); tmp.appendChild(frag);
@@ -665,8 +701,8 @@
                 }
                 const det = document.createElement('details');
                 det.open = true;
-                det.innerHTML = '<summary>Judul bagian</summary>' + innerHtml;
-                // Cari blok tingkat atas tempat kursor berada, lalu sisipkan setelahnya.
+                det.innerHTML = '<summary>Section title</summary>' + innerHtml;
+                // Find the top-level block where the cursor is, then insert after it.
                 let anchor = null;
                 if (sel && sel.rangeCount) {
                     let n = sel.getRangeAt(0).startContainer;
@@ -688,11 +724,11 @@
                 editor.focus();
             }
             else if (act === 'table') {
-                const rowsN = parseInt(prompt('Jumlah baris (tidak termasuk header):', '2') || '0', 10);
-                const colsN = parseInt(prompt('Jumlah kolom:', '3') || '0', 10);
+                const rowsN = parseInt(prompt('Number of rows (excluding header):', '2') || '0', 10);
+                const colsN = parseInt(prompt('Number of columns:', '3') || '0', 10);
                 if (!rowsN || !colsN || rowsN < 1 || colsN < 1) return;
                 let html = '<table><thead><tr>';
-                for (let c = 0; c < colsN; c++) html += '<th>Kolom ' + (c + 1) + '</th>';
+                for (let c = 0; c < colsN; c++) html += '<th>Column ' + (c + 1) + '</th>';
                 html += '</tr></thead><tbody>';
                 for (let r = 0; r < rowsN; r++) {
                     html += '<tr>';
@@ -772,13 +808,13 @@
             document.execCommand('styleWithCSS', false, true);
             document.execCommand('fontName', false, f);
         } else if (f) {
-            setStatus('Pilih teks dulu untuk mengubah huruf', 'warn');
+            setStatus('Select some text first to change the font', 'warn');
         }
         markDirty();
-        fontSel.selectedIndex = 0; // kembalikan ke label
+        fontSel.selectedIndex = 0; // reset to label
     });
 
-    function markDirty() { dirty = true; setStatus('Belum tersimpan…'); scheduleAutoSave(); }
+    function markDirty() { dirty = true; setStatus('Unsaved…'); scheduleAutoSave(); }
     editor.addEventListener('input', markDirty);
 
     // Shortcut: Ctrl+S simpan, Ctrl+B/I sudah default contenteditable
@@ -838,7 +874,7 @@
         markDirty();
     });
 
-    // ===================== Wire tombol =====================
+    // ===================== Wire buttons =====================
     btnOpen.addEventListener('click', openFolder);
     document.getElementById('nt-up').addEventListener('click', goUp);
     btnNew.addEventListener('click', newFile);
@@ -846,15 +882,19 @@
     btnSave.addEventListener('click', saveNow);
     document.getElementById('nt-saveas').addEventListener('click', saveAs);
     document.getElementById('nt-pdf').addEventListener('click', exportPdf);
+    btnRaw.addEventListener('click', function () { setRawMode(!rawMode); });
+    rawArea.addEventListener('input', function () { dirty = true; setStatus('Unsaved…'); scheduleAutoSave(); });
 
-    // Ekspor ke PDF: buka jendela cetak berisi konten editor + gaya, lalu print (Simpan sebagai PDF).
+    // Export to PDF: open a print window with the editor content + styles, then print (Save as PDF).
     function exportPdf() {
-        const title = (currentFileName || 'catatan').replace(/\.[^.]+$/, '');
-        // Buka semua <details> agar isinya ikut tercetak.
+        const title = (currentFileName || 'notes').replace(/\.[^.]+$/, '');
+        // Ensure raw edits are reflected first.
+        if (rawMode) setRawMode(false);
+        // Open all <details> so their content is printed too.
         const clone = editor.cloneNode(true);
         clone.querySelectorAll('details').forEach(function (d) { d.setAttribute('open', ''); });
         const win = window.open('', '_blank');
-        if (!win) { alert('Popup diblokir. Izinkan popup untuk ekspor PDF.'); return; }
+        if (!win) { alert('Popup blocked. Please allow popups to export PDF.'); return; }
         const css =
             'body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#1f2933;line-height:1.6;max-width:800px;margin:24px auto;padding:0 16px;}' +
             'h1{font-size:1.8rem}h2{font-size:1.4rem}h3{font-size:1.2rem}' +
@@ -873,7 +913,7 @@
         setTimeout(function () { win.print(); }, 300);
     }
 
-    // Konten awal contoh
-    editor.innerHTML = mdToHtml('# Selamat datang\n\nEditor **Markdown** WYSIWYG. Buka folder di kiri untuk mulai.\n\n- Klik *Buka Folder*\n- Pilih file `.md`\n- Ketik, lalu **auto-save** akan menyimpan ke file');
+    // Initial sample content
+    editor.innerHTML = mdToHtml('# Welcome\n\nA WYSIWYG **Markdown** editor. Open a folder on the left to start.\n\n- Click *Open Folder*\n- Pick a `.md` file\n- Type, and **auto-save** will write it back to the file');
     ensureEditableGaps();
 })();

@@ -126,17 +126,50 @@ window.createDiagram = function (opts) {
         if (openMenu) { openMenu.remove(); openMenu = null; }
         document.removeEventListener('click', outsideClose);
     }
+    // Geser menu agar tidak keluar layar (penting di mobile).
+    function clampMenu(menu) {
+        const r = menu.getBoundingClientRect();
+        const vw = window.innerWidth, vh = window.innerHeight;
+        let left = parseFloat(menu.style.left), top = parseFloat(menu.style.top);
+        if (left + r.width > vw - 6) left = Math.max(6, vw - r.width - 6);
+        if (top + r.height > vh - 6) top = Math.max(6, vh - r.height - 6);
+        menu.style.left = left + 'px'; menu.style.top = top + 'px';
+    }
+
+    // Long-press (touch) -> panggil handler seperti klik kanan. Untuk perangkat mobile.
+    function enableLongPress(el, handler) {
+        let timer = null, startX = 0, startY = 0, fired = false;
+        el.addEventListener('touchstart', function (ev) {
+            if (!ev.touches || ev.touches.length !== 1) return;
+            const t = ev.touches[0]; startX = t.clientX; startY = t.clientY; fired = false;
+            timer = setTimeout(function () {
+                fired = true;
+                handler({ clientX: startX, clientY: startY, touches: [{ clientX: startX, clientY: startY }],
+                    preventDefault: function () {}, stopPropagation: function () {} });
+            }, 500);
+        }, { passive: true });
+        el.addEventListener('touchmove', function (ev) {
+            if (!timer) return;
+            const t = ev.touches[0];
+            if (Math.abs(t.clientX - startX) > 10 || Math.abs(t.clientY - startY) > 10) { clearTimeout(timer); timer = null; }
+        }, { passive: true });
+        function cancel() { if (timer) { clearTimeout(timer); timer = null; } }
+        el.addEventListener('touchend', cancel);
+        el.addEventListener('touchcancel', cancel);
+        // cegah drag mulai jika long-press sudah memicu menu
+        el.addEventListener('touchend', function (ev) { if (fired && ev.cancelable) ev.preventDefault(); });
+    }
 
     // Palet warna umum untuk latar node.
     const FILL_COLORS = [
-        { name: 'Putih', v: '#ffffff' },
-        { name: 'Biru', v: '#cfe4ff' },
-        { name: 'Hijau', v: '#cdefd6' },
-        { name: 'Kuning', v: '#fdf2c4' },
-        { name: 'Merah', v: '#f8cfcf' },
-        { name: 'Ungu', v: '#e6d6fb' },
-        { name: 'Oranye', v: '#ffdfc2' },
-        { name: 'Abu', v: '#e4e7eb' }
+        { name: 'White', v: '#ffffff' },
+        { name: 'Blue', v: '#cfe4ff' },
+        { name: 'Green', v: '#cdefd6' },
+        { name: 'Yellow', v: '#fdf2c4' },
+        { name: 'Red', v: '#f8cfcf' },
+        { name: 'Purple', v: '#e6d6fb' },
+        { name: 'Orange', v: '#ffdfc2' },
+        { name: 'Gray', v: '#e4e7eb' }
     ];
     // Menu konteks node (klik kanan). Berisi aksi + baris pilihan warna (bila allowFill).
     function showNodeMenu(ev, node, actions) {
@@ -155,20 +188,20 @@ window.createDiagram = function (opts) {
             });
             menu.appendChild(b);
         }
-        item('Ubah teks', actions.editText);
-        item('Hubungkan panah ke node lain', actions.startLink);
+        item('Edit text', actions.editText);
+        item('Connect arrow to another node', actions.startLink);
 
         // Grup / lepas grup. Butuh minimal 2 node (pilihan aktif + node ini) untuk membuat grup.
         const selIds = new Set(selection); selIds.add(node.id);
         if (selIds.size >= 2) {
-            item('Grup node terpilih (' + selIds.size + ')', function () {
+            item('Group selected nodes (' + selIds.size + ')', function () {
                 const g = gid();
                 selIds.forEach(function (id) { const n = findNode(id); if (n) n.group = g; });
                 clearSelection(); render();
             });
         }
         if (node.group) {
-            item('Lepas grup', function () {
+            item('Ungroup', function () {
                 const g = node.group;
                 model.nodes.forEach(function (n) { if (n.group === g) delete n.group; });
                 render();
@@ -192,12 +225,13 @@ window.createDiagram = function (opts) {
             menu.appendChild(row);
         }
 
-        item('Hapus node', function () {
-            if (confirm('Hapus node ini beserta panah terkait?')) actions.doDelete();
+        item('Delete node', function () {
+            if (confirm('Delete this node and its connected arrows?')) actions.doDelete();
         });
 
         document.body.appendChild(menu);
         openMenu = menu;
+        clampMenu(menu);
         setTimeout(function () { document.addEventListener('click', outsideClose); }, 0);
     }
 
@@ -226,9 +260,9 @@ window.createDiagram = function (opts) {
             });
             menu.appendChild(b);
         }
-        item('Ubah keterangan', editLabel);
+        item('Edit label', editLabel);
         const hasBend = typeof edge.wx === 'number';
-        item(hasBend ? 'Luruskan' : 'Belokkan (tengah)', function () {
+        item(hasBend ? 'Straighten' : 'Bend (middle)', function () {
             if (hasBend) { delete edge.wx; delete edge.wy; }
             else {
                 const a = findNode(edge.from), b = findNode(edge.to);
@@ -241,16 +275,17 @@ window.createDiagram = function (opts) {
         });
         // Gaya garis: lengkung (default) atau siku/step (orthogonal). Toggle bolak-balik.
         const isElbow = edge.style === 'elbow';
-        item(isElbow ? 'Gaya: jadikan Lengkung' : 'Gaya: jadikan Siku (step)', function () {
+        item(isElbow ? 'Style: make Curved' : 'Style: make Elbow (step)', function () {
             edge.style = isElbow ? 'curve' : 'elbow';
             render();
         });
-        item('Hapus panah', function () {
+        item('Delete arrow', function () {
             model.edges = model.edges.filter(function (x) { return x !== edge; });
             render();
         });
         document.body.appendChild(menu);
         openMenu = menu;
+        clampMenu(menu);
         // tutup saat klik di luar (abaikan klik di dalam menu)
         setTimeout(function () { document.addEventListener('click', outsideClose); }, 0);
     }
@@ -354,7 +389,7 @@ window.createDiagram = function (opts) {
         g.addEventListener('mouseleave', onHoverOut);
 
         function editLabel() {
-            const lbl = prompt('Keterangan garis:', e.label || '');
+            const lbl = prompt('Line label:', e.label || '');
             if (lbl !== null) { e.label = lbl.trim(); render(); }
         }
 
@@ -362,10 +397,12 @@ window.createDiagram = function (opts) {
         hit.addEventListener('dblclick', function (ev) { ev.stopPropagation(); editLabel(); });
 
         // Klik kanan garis: tampilkan menu (keterangan/belokkan/hapus).
-        hit.addEventListener('contextmenu', function (ev) {
+        function openEdgeMenu(ev) {
             ev.preventDefault(); ev.stopPropagation();
             showEdgeMenu(ev, e, editLabel);
-        });
+        }
+        hit.addEventListener('contextmenu', openEdgeMenu);
+        enableLongPress(hit, openEdgeMenu); // tekan-tahan di layar sentuh
 
         // Handle untuk membelokkan garis (drag titik tengah). Handle selalu menempel di garis (curveMid).
         const handlePos = curveMid;
@@ -444,11 +481,11 @@ window.createDiagram = function (opts) {
         const label = document.createElement('span');
         label.className = 'dg-label';
         label.textContent = node.text;
-        label.title = 'Klik dua kali untuk mengubah teks. Klik kanan untuk menu.';
+        label.title = 'Double-click to edit text. Right-click for menu.';
         el.appendChild(label);
 
         function editText() {
-            const t = prompt('Teks node (boleh beberapa baris dengan \\n):', node.text);
+            const t = prompt('Node text (use \\n for line breaks):', node.text);
             if (t !== null) { node.text = t.replace(/\\n/g, '\n'); render(); }
         }
         function startLink() {
@@ -467,15 +504,17 @@ window.createDiagram = function (opts) {
         // Klik dua kali: ubah teks.
         label.addEventListener('dblclick', function (ev) { ev.stopPropagation(); editText(); });
         // Klik kanan node: menu konteks (ubah teks / hubungkan / warna / hapus).
-        el.addEventListener('contextmenu', function (ev) {
+        function openNodeMenu(ev) {
             ev.preventDefault(); ev.stopPropagation();
             showNodeMenu(ev, node, { editText: editText, startLink: startLink, doDelete: doDelete });
-        });
+        }
+        el.addEventListener('contextmenu', openNodeMenu);
+        enableLongPress(el, openNodeMenu); // tekan-tahan di layar sentuh
 
         // Handle resize di pojok kanan-bawah.
         const rz = document.createElement('div');
         rz.className = 'dg-resize';
-        rz.title = 'Ubah ukuran';
+        rz.title = 'Resize';
         enableResize(rz, el, node);
         el.appendChild(rz);
 
@@ -619,7 +658,7 @@ window.createDiagram = function (opts) {
     // ===== add node =====
     function addNode(shape) {
         const sh = shape || defaultShape;
-        const n = { id: nid(), text: sh === 'text' ? 'Teks' : 'Node', shape: sh,
+        const n = { id: nid(), text: sh === 'text' ? 'Text' : 'Node', shape: sh,
             x: 60 + (model.nodes.length % 5) * 40, y: 60 + (model.nodes.length % 5) * 40 };
         model.nodes.push(n);
         render();
@@ -634,7 +673,7 @@ window.createDiagram = function (opts) {
                 const w = await h.createWritable(); await w.write(blob); await w.close(); return;
             } catch (err) { if (err && err.name === 'AbortError') return; }
         }
-        let name = prompt('Simpan sebagai (nama file):', defaultName);
+        let name = prompt('Save as (file name):', defaultName);
         if (name === null) return;
         name = (name.trim() || defaultName).replace(/[\\/:*?"<>|]/g, '_');
         if (!name.toLowerCase().endsWith('.' + ext)) name += '.' + ext;
@@ -644,7 +683,7 @@ window.createDiagram = function (opts) {
     }
     function exportJson() {
         const blob = new Blob([JSON.stringify(model, null, 2)], { type: 'application/json' });
-        saveBlob(opts.fileBase + '.json', blob, 'application/json', 'json', 'File JSON');
+        saveBlob(opts.fileBase + '.json', blob, 'application/json', 'json', 'JSON file');
     }
     function exportPng() {
         const clone = svg.cloneNode(true);
@@ -755,7 +794,7 @@ window.createDiagram = function (opts) {
             const lh = 16, sy = cy - (tl.length - 1) * lh / 2;
             tl.forEach(function (ln, i) { ctx.fillText(ln, cx, sy + i * lh); });
         });
-        c.toBlob(function (blob) { saveBlob(opts.fileBase + '.png', blob, 'image/png', 'png', 'Gambar PNG'); }, 'image/png');
+        c.toBlob(function (blob) { saveBlob(opts.fileBase + '.png', blob, 'image/png', 'png', 'PNG image'); }, 'image/png');
     }
     function importFile(file) {
         const r = new FileReader();
@@ -764,8 +803,8 @@ window.createDiagram = function (opts) {
                 const d = JSON.parse(String(r.result));
                 if (d && Array.isArray(d.nodes)) model = d;
                 else if (d && d.model && Array.isArray(d.model.nodes)) model = d.model;
-                else { alert('File tidak valid.'); return; }
-            } catch (e) { alert('File JSON tidak valid: ' + e.message); return; }
+                else { alert('Invalid file.'); return; }
+            } catch (e) { alert('Invalid JSON file: ' + e.message); return; }
             render();
         };
         r.readAsText(file);
@@ -779,7 +818,7 @@ window.createDiagram = function (opts) {
         e.target.value = '';
     });
     document.getElementById(opts.resetId).addEventListener('click', function () {
-        if (confirm('Reset ke contoh awal? Data tersimpan akan dihapus.')) {
+        if (confirm('Reset to the initial example? Saved data will be cleared.')) {
             try { localStorage.removeItem(storageKey); } catch (e) {}
             seed(); render();
         }

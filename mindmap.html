@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -16,38 +16,39 @@
             </svg>
             <span>Tools</span>
         </a>
-        <div><a class="btn btn-light" href="index.html">Beranda</a></div>
+        <div><a class="btn btn-light" href="index.html">Home</a></div>
     </nav>
     <div class="hero-content">
-        <h1>Mind Map Sederhana</h1>
-        <p>Susun ide dengan drag &amp; drop, ciutkan/perluas cabang, lalu simpan atau impor sebagai file JSON. Semua berjalan di browser Anda.</p>
+        <h1>Simple Mind Map</h1>
+        <p>Organize ideas with drag &amp; drop, collapse/expand branches, then save or import as a JSON file. Everything runs in your browser.</p>
     </div>
 </header>
 
 <div class="container">
     <div class="card">
         <div class="mm-toolbar">
-            <button class="btn btn-sm" id="mm-export-json">Simpan (JSON)</button>
-            <button class="btn btn-sm" id="mm-export-png">Ekspor Gambar (PNG)</button>
+            <button class="btn btn-sm" id="mm-export-json">Save (JSON)</button>
+            <button class="btn btn-sm" id="mm-export-png">Export Image (PNG)</button>
             <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0">
-                Impor (JSON)
+                Import (JSON)
                 <input type="file" id="mm-import" accept=".json,application/json" hidden/>
             </label>
             <button class="btn btn-sm btn-danger" id="mm-reset">Reset</button>
-            <button class="btn btn-sm btn-outline" id="mm-mode">Posisi: Auto</button>
+            <button class="btn btn-sm btn-outline" id="mm-mode">Layout: Auto</button>
             <span class="mm-zoom-controls">
-                <button class="btn btn-sm btn-outline" id="mm-zoom-out" title="Perkecil">&minus;</button>
+                <button class="btn btn-sm btn-outline" id="mm-zoom-out" title="Zoom out">&minus;</button>
                 <span id="mm-zoom-level">100%</span>
-                <button class="btn btn-sm btn-outline" id="mm-zoom-in" title="Perbesar">+</button>
+                <button class="btn btn-sm btn-outline" id="mm-zoom-in" title="Zoom in">+</button>
                 <button class="btn btn-sm btn-outline" id="mm-zoom-reset" title="Reset zoom">100%</button>
             </span>
         </div>
         <p style="font-size:0.85rem;color:#52606d;margin:0.5rem 0">
-            Tips: <strong>klik kanan</strong> node untuk menu (tambah anak, ubah teks, tandai selesai, deskripsi, ciutkan, hapus).
-            Klik dua kali teks untuk mengubah cepat — <strong>Enter</strong> baris baru, <strong>Ctrl+Enter</strong>/klik di luar untuk simpan, <strong>Esc</strong> batal.
-            Badge angka pada node = jumlah anak; <strong>klik badge</strong> untuk perluas/ciutkan. Titik biru = ada deskripsi.
-            Mode <strong>Auto</strong> merapikan posisi otomatis; <strong>Manual</strong> bebas seret. Ctrl+seret untuk menggeser panel.
-            Perubahan tersimpan otomatis di browser ini (tetap simpan file JSON untuk cadangan/pindah perangkat).
+            Tips: <strong>right-click</strong> a node for the menu (add child, edit text, mark done, description, collapse, delete).
+            Double-click text to edit quickly — <strong>Enter</strong> for a new line, <strong>Ctrl+Enter</strong>/click outside to save, <strong>Esc</strong> to cancel.
+            The number badge on a node = child count; <strong>click the badge</strong> to expand/collapse. A blue dot = has a description.
+            <strong>Auto</strong> layout tidies positions automatically; <strong>Manual</strong> lets you drag freely. Ctrl+drag to pan the canvas.
+            On touch devices, <strong>press and hold</strong> a node to open its menu; use the zoom buttons to zoom.
+            Changes are auto-saved in this browser (still save the JSON file for backup/moving devices).
         </p>
         <div id="mm-canvas" class="mm-canvas">
             <div id="mm-stage" class="mm-stage">

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -16,10 +16,10 @@
             </svg>
             <span>Tools</span>
         </a>
-        <div><a class="btn btn-light" href="index.html">Beranda</a></div>
+        <div><a class="btn btn-light" href="index.html">Home</a></div>
     </nav>
     <div class="hero-content"><h1>Notes (Markdown)</h1>
-        <p>Editor catatan WYSIWYG dalam format Markdown. Buka folder lokal di kiri, edit di kanan, auto-save.</p></div>
+        <p>A WYSIWYG Markdown notes editor. Open a local folder on the left, edit on the right, auto-save.</p></div>
 </header>
 
 <div class="container container-wide">
@@ -28,12 +28,12 @@
             <!-- Sidebar explorer -->
             <aside class="nt-sidebar">
                 <div class="nt-side-head">
-                    <button class="btn btn-sm" id="nt-open-folder" title="Buka folder lokal">📂 Buka Folder</button>
-                    <button class="btn btn-sm btn-outline" id="nt-up" title="Naik satu level" disabled>⬆</button>
-                    <button class="btn btn-sm btn-outline" id="nt-new-file" title="Buat catatan baru" disabled>＋</button>
-                    <button class="btn btn-sm btn-outline" id="nt-refresh" title="Muat ulang daftar" disabled>⟳</button>
+                    <button class="btn btn-sm" id="nt-open-folder" title="Open a local folder">📂 Open Folder</button>
+                    <button class="btn btn-sm btn-outline" id="nt-up" title="Go up one level" disabled>⬆</button>
+                    <button class="btn btn-sm btn-outline" id="nt-new-file" title="Create a new note" disabled>＋</button>
+                    <button class="btn btn-sm btn-outline" id="nt-refresh" title="Reload list" disabled>⟳</button>
                 </div>
-                <div class="nt-folder-name" id="nt-folder-name">Belum ada folder dibuka</div>
+                <div class="nt-folder-name" id="nt-folder-name">No folder opened</div>
                 <ul class="nt-tree" id="nt-tree"></ul>
                 <p class="nt-hint" id="nt-fs-hint"></p>
             </aside>
@@ -41,15 +41,15 @@
             <!-- Editor -->
             <section class="nt-main">
                 <div class="nt-toolbar" id="nt-toolbar">
-                    <select id="nt-block" title="Gaya paragraf">
+                    <select id="nt-block" title="Paragraph style">
                         <option value="p">Normal</option>
-                        <option value="h1">Judul 1</option>
-                        <option value="h2">Judul 2</option>
-                        <option value="h3">Judul 3</option>
-                        <option value="blockquote">Kutipan</option>
-                        <option value="pre">Kode</option>
+                        <option value="h1">Heading 1</option>
+                        <option value="h2">Heading 2</option>
+                        <option value="h3">Heading 3</option>
+                        <option value="blockquote">Quote</option>
+                        <option value="pre">Code</option>
                     </select>
-                    <select id="nt-font" title="Jenis huruf">
+                    <select id="nt-font" title="Font family">
                         <option value="">Font: Default</option>
                         <option value="Arial, Helvetica, sans-serif">Arial</option>
                         <option value="'Times New Roman', Times, serif">Times New Roman</option>
@@ -60,49 +60,52 @@
                         <option value="Tahoma, sans-serif">Tahoma</option>
                         <option value="'Comic Sans MS', cursive">Comic Sans MS</option>
                     </select>
-                    <button type="button" data-cmd="bold" title="Tebal (Ctrl+B)"><b>B</b></button>
-                    <button type="button" data-cmd="italic" title="Miring (Ctrl+I)"><i>I</i></button>
-                    <button type="button" data-cmd="strikeThrough" title="Coret"><s>S</s></button>
-                    <button type="button" data-cmd="insertUnorderedList" title="Daftar butir">• List</button>
-                    <button type="button" data-cmd="insertOrderedList" title="Daftar nomor">1. List</button>
-                    <button type="button" data-act="code" title="Kode sebaris (inline)">&lt;/&gt;</button>
-                    <button type="button" data-act="codeblock" title="Blok kode multi-baris">▤ Kode</button>
-                    <button type="button" data-act="link" title="Tautan">🔗</button>
-                    <button type="button" data-act="hr" title="Garis pemisah">―</button>
+                    <button type="button" data-cmd="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+                    <button type="button" data-cmd="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+                    <button type="button" data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
+                    <button type="button" data-cmd="insertUnorderedList" title="Bulleted list">• List</button>
+                    <button type="button" data-cmd="insertOrderedList" title="Numbered list">1. List</button>
+                    <button type="button" data-act="code" title="Inline code">&lt;/&gt;</button>
+                    <button type="button" data-act="codeblock" title="Multi-line code block">▤ Code</button>
+                    <button type="button" data-act="link" title="Link">🔗</button>
+                    <button type="button" data-act="hr" title="Divider">―</button>
                     <span class="nt-sep"></span>
                     <div class="nt-dd">
-                        <button type="button" id="nt-color-btn" title="Warna teks"><span style="color:#d64545">A</span>▾</button>
+                        <button type="button" id="nt-color-btn" title="Text color"><span style="color:#d64545">A</span>▾</button>
                         <div class="nt-dd-menu" id="nt-color-menu"></div>
                     </div>
                     <div class="nt-dd">
-                        <button type="button" id="nt-hilite-btn" title="Warna latar (highlight)"><span style="background:#fff3a3;padding:0 3px">A</span>▾</button>
+                        <button type="button" id="nt-hilite-btn" title="Highlight color"><span style="background:#fff3a3;padding:0 3px">A</span>▾</button>
                         <div class="nt-dd-menu" id="nt-hilite-menu"></div>
                     </div>
                     <div class="nt-dd">
-                        <button type="button" id="nt-date-btn" title="Sisipkan tanggal/waktu">📅▾</button>
+                        <button type="button" id="nt-date-btn" title="Insert date/time">📅▾</button>
                         <div class="nt-dd-menu nt-date-menu" id="nt-date-menu"></div>
                     </div>
-                    <button type="button" data-act="details" title="Bagian yang bisa dilipat (collapsible)">▸ Lipat</button>
-                    <button type="button" data-act="table" title="Sisipkan tabel">▦ Tabel</button>
+                    <button type="button" data-act="details" title="Collapsible section">▸ Fold</button>
+                    <button type="button" data-act="table" title="Insert table">▦ Table</button>
                     <span class="nt-sep"></span>
-                    <label class="nt-autosave" title="Simpan otomatis ke file">
+                    <label class="nt-autosave" title="Auto-save to file">
                         <input type="checkbox" id="nt-autosave" checked/> Auto-save
                     </label>
-                    <button class="btn btn-sm" id="nt-save" title="Simpan (Ctrl+S)">Simpan</button>
-                    <button class="btn btn-sm btn-outline" id="nt-saveas" title="Simpan sebagai file baru">Simpan sebagai…</button>
-                    <button class="btn btn-sm btn-outline" id="nt-pdf" title="Ekspor ke PDF">PDF</button>
+                    <button class="btn btn-sm" id="nt-save" title="Save (Ctrl+S)">Save</button>
+                    <button class="btn btn-sm btn-outline" id="nt-saveas" title="Save as a new file">Save as…</button>
+                    <button class="btn btn-sm btn-outline" id="nt-pdf" title="Export to PDF">PDF</button>
+                    <button class="btn btn-sm btn-outline" id="nt-raw" title="Show/edit raw Markdown source">Raw</button>
                     <span class="nt-status" id="nt-status"></span>
                 </div>
                 <div class="nt-editor" id="nt-editor" contenteditable="true" spellcheck="false"></div>
+                <textarea class="nt-raw" id="nt-raw-area" spellcheck="false" style="display:none"></textarea>
             </section>
         </div>
         <p style="font-size:0.82rem;color:#52606d;margin:0.6rem 0 0">
-            Klik <strong>Buka Folder</strong> untuk memilih folder lokal (browser akan meminta izin). File <code>.md</code>/<code>.txt</code>
-            akan tampil di kiri. Klik file untuk membuka; ketik untuk mengedit. Format toolbar (tebal/miring/judul/daftar) disimpan sebagai Markdown.
-            Di dalam daftar, tekan <strong>Tab</strong> untuk membuat sub-daftar (nested) dan <strong>Shift+Tab</strong> untuk naik level.
-            Untuk <strong>blok kode multi-baris</strong>: klik tombol <strong>▤ Kode</strong> (atau seleksi teks multi-baris lalu klik). Di dalam blok, <strong>Enter</strong> = baris baru, <strong>Tab</strong> = 2 spasi, dan <strong>Enter di baris kosong</strong> untuk keluar dari blok.
-            Ada juga <strong>warna teks</strong> &amp; <strong>highlight latar</strong> (pilih teks dulu), sisip <strong>tanggal/waktu</strong>, bagian <strong>lipat/collapsible</strong>, <strong>tabel</strong>, dan <strong>ekspor PDF</strong>.
-            <strong>Auto-save</strong> menulis kembali ke file otomatis. Butuh browser berbasis Chromium (Chrome/Edge) untuk akses folder.
+            Click <strong>Open Folder</strong> to pick a local folder (the browser will ask for permission). <code>.md</code>/<code>.txt</code> files
+            appear on the left. Click a file to open; type to edit. Toolbar formatting (bold/italic/heading/list) is stored as Markdown.
+            Inside a list, press <strong>Tab</strong> to create a sub-list (nested) and <strong>Shift+Tab</strong> to go up a level.
+            For a <strong>multi-line code block</strong>: click <strong>▤ Code</strong> (or select multi-line text then click). Inside the block, <strong>Enter</strong> = new line, <strong>Tab</strong> = 2 spaces, and <strong>Enter on an empty line</strong> exits the block.
+            There is also <strong>text color</strong> &amp; <strong>highlight</strong> (select text first), insert <strong>date/time</strong>, a <strong>collapsible</strong> section, <strong>tables</strong>, and <strong>PDF export</strong>.
+            Use <strong>Raw</strong> to view/fix the underlying Markdown directly.
+            <strong>Auto-save</strong> writes back to the file automatically. Requires a Chromium-based browser (Chrome/Edge) for folder access.
         </p>
     </div>
 </div>

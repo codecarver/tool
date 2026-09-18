@@ -24,9 +24,9 @@
         return { id: newId(), text: text, x: x, y: y, collapsed: false, children: [] };
     }
     function defaultRoot() {
-        const r = makeNode('Ide Utama', 480, 60);
-        r.children.push(makeNode('Cabang 1', 240, 220));
-        r.children.push(makeNode('Cabang 2', 720, 220));
+        const r = makeNode('Main Idea', 480, 60);
+        r.children.push(makeNode('Branch 1', 240, 220));
+        r.children.push(makeNode('Branch 2', 720, 220));
         return r;
     }
 
@@ -147,6 +147,28 @@
     function removeNode(node, id) {
         node.children = node.children.filter(function (c) { return c.id !== id; });
         node.children.forEach(function (c) { removeNode(c, id); });
+    }
+
+    // Long-press (touch) -> behave like right-click. For mobile devices.
+    function enableLongPress(el, handler) {
+        let timer = null, startX = 0, startY = 0, fired = false;
+        el.addEventListener('touchstart', function (ev) {
+            if (!ev.touches || ev.touches.length !== 1) return;
+            const t = ev.touches[0]; startX = t.clientX; startY = t.clientY; fired = false;
+            timer = setTimeout(function () {
+                fired = true;
+                handler({ clientX: startX, clientY: startY, touches: [{ clientX: startX, clientY: startY }],
+                    preventDefault: function () {}, stopPropagation: function () {} });
+            }, 500);
+        }, { passive: true });
+        el.addEventListener('touchmove', function (ev) {
+            if (!timer) return;
+            const t = ev.touches[0];
+            if (Math.abs(t.clientX - startX) > 10 || Math.abs(t.clientY - startY) > 10) { clearTimeout(timer); timer = null; }
+        }, { passive: true });
+        function cancel() { if (timer) { clearTimeout(timer); timer = null; } }
+        el.addEventListener('touchend', function (ev) { if (fired && ev.cancelable) ev.preventDefault(); cancel(); });
+        el.addEventListener('touchcancel', cancel);
     }
 
     // ===== Rendering =====
@@ -286,7 +308,7 @@
         const label = document.createElement('span');
         label.className = 'mm-label';
         label.textContent = node.text; // textContent + CSS pre-wrap -> newline tampil
-        label.title = 'Klik dua kali untuk mengubah teks. Klik kanan untuk menu.';
+        label.title = 'Double-click to edit text. Right-click for menu.';
         label.addEventListener('dblclick', function (e) {
             e.stopPropagation();
             openEditor(node, el);
@@ -298,7 +320,7 @@
             const count = document.createElement('span');
             count.className = 'mm-count' + (node.collapsed ? ' collapsed' : '');
             count.textContent = node.collapsed ? ('+' + node.children.length) : node.children.length;
-            count.title = node.children.length + ' anak — klik untuk ' + (node.collapsed ? 'perluas' : 'ciutkan');
+            count.title = node.children.length + ' children — click to ' + (node.collapsed ? 'expand' : 'collapse');
             count.addEventListener('click', function (e) {
                 e.stopPropagation(); node.collapsed = !node.collapsed; render();
             });
@@ -309,15 +331,17 @@
         if (node.desc && node.desc.trim() !== '') {
             const dot = document.createElement('span');
             dot.className = 'mm-desc-dot';
-            dot.title = 'Punya deskripsi (klik kanan untuk lihat)';
+            dot.title = 'Has a description (right-click to view)';
             el.appendChild(dot);
         }
 
-        // Klik kanan node: menu konteks lengkap (tambah anak, teks, selesai, deskripsi, ciutkan, hapus).
-        el.addEventListener('contextmenu', function (e) {
+        // Right-click node: full context menu (add child, text, done, description, collapse, delete).
+        function openNodeMenu(e) {
             e.preventDefault(); e.stopPropagation();
             showNodeMenu(e, node, el);
-        });
+        }
+        el.addEventListener('contextmenu', openNodeMenu);
+        enableLongPress(el, openNodeMenu); // press-and-hold on touch devices
 
         if (autoLayout) el.style.cursor = 'default';
         enableDrag(el, node);
@@ -352,25 +376,34 @@
             });
             menu.appendChild(b);
         }
-        item('Tambah anak', function () { addChild(node); });
-        item('Ubah teks', function () { openEditor(node, elById[node.id] || el); });
-        item(node.done ? 'Batalkan tanda selesai' : 'Tandai selesai', function () {
+        item('Add child', function () { addChild(node); });
+        item('Edit text', function () { openEditor(node, elById[node.id] || el); });
+        item(node.done ? 'Unmark done' : 'Mark as done', function () {
             node.done = !node.done; render();
         });
         const hasDesc = node.desc && node.desc.trim() !== '';
-        item(hasDesc ? 'Lihat/ubah deskripsi' : 'Tambah deskripsi', function () { openDescription(node); });
+        item(hasDesc ? 'View/edit description' : 'Add description', function () { openDescription(node); });
         if (node.children.length > 0) {
-            item(node.collapsed ? 'Perluas' : 'Ciutkan', function () {
+            item(node.collapsed ? 'Expand' : 'Collapse', function () {
                 node.collapsed = !node.collapsed; render();
             });
         }
         if (node !== root) {
-            item('Hapus node (beserta anak)', function () {
-                if (confirm('Hapus node ini beserta anak-anaknya?')) { removeNode(root, node.id); render(); }
+            item('Delete node (and children)', function () {
+                if (confirm('Delete this node and all its children?')) { removeNode(root, node.id); render(); }
             });
         }
         document.body.appendChild(menu);
         nodeMenu = menu;
+        // Keep menu within the viewport (important on mobile).
+        (function () {
+            const r = menu.getBoundingClientRect();
+            const vw = window.innerWidth, vh = window.innerHeight;
+            let left = parseFloat(menu.style.left), top = parseFloat(menu.style.top);
+            if (left + r.width > vw - 6) left = Math.max(6, vw - r.width - 6);
+            if (top + r.height > vh - 6) top = Math.max(6, vh - r.height - 6);
+            menu.style.left = left + 'px'; menu.style.top = top + 'px';
+        })();
         setTimeout(function () { document.addEventListener('click', nodeMenuOutside); }, 0);
     }
 
@@ -418,19 +451,19 @@
 
         const title = document.createElement('div');
         title.className = 'mm-modal-title';
-        title.textContent = 'Deskripsi — ' + (node.text || '').split('\n')[0];
+        title.textContent = 'Description — ' + (node.text || '').split('\n')[0];
 
         const ta = document.createElement('textarea');
         ta.className = 'mm-modal-textarea';
         ta.value = node.desc || '';
-        ta.placeholder = 'Tulis catatan lebih panjang di sini. Tidak akan muncul di gambar utama, hanya di sini.';
+        ta.placeholder = 'Write a longer note here. It will not appear in the main image, only here.';
 
         const actions = document.createElement('div');
         actions.className = 'mm-modal-actions';
         const saveBtn = document.createElement('button');
-        saveBtn.className = 'btn btn-sm'; saveBtn.type = 'button'; saveBtn.textContent = 'Simpan';
+        saveBtn.className = 'btn btn-sm'; saveBtn.type = 'button'; saveBtn.textContent = 'Save';
         const cancelBtn = document.createElement('button');
-        cancelBtn.className = 'btn btn-sm btn-outline'; cancelBtn.type = 'button'; cancelBtn.textContent = 'Tutup';
+        cancelBtn.className = 'btn btn-sm btn-outline'; cancelBtn.type = 'button'; cancelBtn.textContent = 'Close';
 
         saveBtn.addEventListener('click', function () {
             node.desc = ta.value;
@@ -552,7 +585,7 @@
             }
         }
         // Fallback: prompt nama, lalu unduh (lokasi mengikuti folder unduhan browser).
-        let name = prompt('Simpan sebagai (nama file):', defaultName);
+        let name = prompt('Save as (file name):', defaultName);
         if (name === null) return;
         name = (name.trim() || defaultName).replace(/[\\/:*?"<>|]/g, '_');
         if (!name.toLowerCase().endsWith('.' + extension)) name += '.' + extension;
@@ -561,7 +594,7 @@
 
     function exportJson() {
         const blob = new Blob([JSON.stringify(root, null, 2)], { type: 'application/json' });
-        saveBlob('mindmap.json', blob, 'application/json', 'json', 'File JSON');
+        saveBlob('mindmap.json', blob, 'application/json', 'json', 'JSON file');
     }
 
     // ===== Export ke gambar (PNG) — digambar manual ke canvas =====
@@ -690,7 +723,7 @@
         drawNodes(root);
 
         canvasEl.toBlob(function (blob) {
-            saveBlob('mindmap.png', blob, 'image/png', 'png', 'Gambar PNG');
+            saveBlob('mindmap.png', blob, 'image/png', 'png', 'PNG image');
         }, 'image/png');
     }
     function normalize(node, depth) {
@@ -711,8 +744,8 @@
         reader.onload = function () {
             let imported = null;
             try { imported = JSON.parse(String(reader.result)); }
-            catch (err) { alert('File JSON tidak valid: ' + err.message); return; }
-            if (!imported || typeof imported !== 'object') { alert('File tidak valid.'); return; }
+            catch (err) { alert('Invalid JSON file: ' + err.message); return; }
+            if (!imported || typeof imported !== 'object') { alert('Invalid file.'); return; }
             window.__mmRow = 0;
             root = normalize(imported, 0);
             render();
@@ -728,7 +761,7 @@
         e.target.value = '';
     });
     document.getElementById('mm-reset').addEventListener('click', function () {
-        if (confirm('Reset mind map ke contoh awal? Data tersimpan otomatis akan dihapus.')) {
+        if (confirm('Reset the mind map to the initial example? Auto-saved data will be cleared.')) {
             clearStorage();
             root = defaultRoot();
             render();
@@ -740,8 +773,8 @@
 
     const modeBtn = document.getElementById('mm-mode');
     function updateModeBtn() {
-        modeBtn.textContent = autoLayout ? 'Posisi: Auto' : 'Posisi: Manual';
-        modeBtn.title = autoLayout ? 'Klik untuk mode Manual (seret bebas)' : 'Klik untuk mode Auto (rapi otomatis)';
+        modeBtn.textContent = autoLayout ? 'Layout: Auto' : 'Layout: Manual';
+        modeBtn.title = autoLayout ? 'Click for Manual mode (free drag)' : 'Click for Auto mode (auto-tidy)';
     }
     modeBtn.addEventListener('click', function () {
         autoLayout = !autoLayout;

@@ -3,14 +3,14 @@
 
     const STORAGE_KEY = 'rtfinance.sequence.v1';
     const SAMPLE = [
-        'title: Proses Login Warga',
-        'Warga -> Sistem: Login',
-        'Sistem -> Sistem: Validasi input',
-        'Sistem -> Database: Cek kredensial jika\\nkondisi terpenuhi',
-        'Database --> Sistem: Hasil',
-        '--- Verifikasi OTP ---',
-        'Sistem -x Warga: Gagal kirim OTP [red]',
-        'Sistem -> Warga: Tampilkan dashboard'
+        'title: User Login Process',
+        'User -> System: Login',
+        'System -> System: Validate input',
+        'System -> Database: Check credentials if\\nconditions are met',
+        'Database --> System: Result',
+        '--- OTP Verification ---',
+        'System -x User: Failed to send OTP [red]',
+        'System -> User: Show dashboard'
     ].join('\n');
 
     const input = document.getElementById('sq-input');
@@ -238,7 +238,7 @@
                 const w = await h.createWritable(); await w.write(blob); await w.close(); return;
             } catch (err) { if (err && err.name === 'AbortError') return; }
         }
-        let name = prompt('Simpan sebagai (nama file):', defaultName);
+        let name = prompt('Save as (file name):', defaultName);
         if (name === null) return;
         name = (name.trim() || defaultName).replace(/[\\/:*?"<>|]/g, '_');
         if (!name.toLowerCase().endsWith('.' + ext)) name += '.' + ext;
@@ -249,7 +249,7 @@
 
     function exportJson() {
         const blob = new Blob([JSON.stringify({ text: input.value }, null, 2)], { type: 'application/json' });
-        saveBlob('sequence.json', blob, 'application/json', 'json', 'File JSON');
+        saveBlob('sequence.json', blob, 'application/json', 'json', 'JSON file');
     }
     function exportPng() {
         const clone = svg.cloneNode(true);
@@ -265,7 +265,7 @@
             ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
             ctx.drawImage(img, 0, 0);
             URL.revokeObjectURL(url);
-            c.toBlob(function (blob) { saveBlob('sequence.png', blob, 'image/png', 'png', 'Gambar PNG'); }, 'image/png');
+            c.toBlob(function (blob) { saveBlob('sequence.png', blob, 'image/png', 'png', 'PNG image'); }, 'image/png');
         };
         img.src = url;
     }
@@ -278,7 +278,7 @@
                     const data = JSON.parse(txt);
                     input.value = data.text != null ? data.text : '';
                 } else { input.value = txt; }
-            } catch (e) { alert('File tidak valid: ' + e.message); return; }
+            } catch (e) { alert('Invalid file: ' + e.message); return; }
             render();
         };
         r.readAsText(file);
@@ -293,7 +293,7 @@
         e.target.value = '';
     });
     document.getElementById('sq-reset').addEventListener('click', function () {
-        if (confirm('Reset ke contoh awal?')) { try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+        if (confirm('Reset to the initial example?')) { try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
             input.value = SAMPLE; render(); }
     });
 

@@ -1,35 +1,35 @@
 # Diagram & Notes Tools
 
-Kumpulan alat bantu yang berjalan **sepenuhnya di browser** — tanpa server, tanpa login, tanpa build step. Semua data disimpan di perangkat Anda (localStorage / File System Access API).
+A set of tools that run **entirely in the browser** — no server, no login, no build step. All data stays on your device (localStorage / File System Access API).
 
-## Isi
+## Contents
 
-- **Mind Map** (`mindmap.html`) — peta pikiran radial: drag & drop, ciutkan/perluas, deskripsi per node, tandai selesai, zoom, ekspor PNG/JSON, impor JSON.
-- **Sequence Diagram** (`sequence.html`) — tulis interaksi berbasis teks, render otomatis. Mendukung garis solid/putus-putus, tanda gagal (X), warna merah, self-loop, judul, separator, catatan.
-- **Flow Diagram** (`flow.html`) — alur proses: terminator, proses, keputusan, input/output, dokumen, sub-proses, teks bebas; panah lengkung/siku, warna, grup.
-- **Free Diagram** (`free.html`) — kanvas bebas: kotak, elips, wajik, teks; objek di dalam objek, warna, grup.
-- **Notes (Markdown)** (`notes.html`) — editor catatan WYSIWYG format Markdown: buka folder lokal, jelajah file, auto-save, warna/highlight, font, tabel, collapsible, nested list, ekspor PDF.
+- **Mind Map** (`mindmap.html`) — radial mind map: drag & drop, collapse/expand, per-node description, mark done, zoom, PNG/JSON export, JSON import.
+- **Sequence Diagram** (`sequence.html`) — write text-based interactions, rendered automatically. Supports solid/dashed lines, failure (X), red color, self-loops, title, separators, notes.
+- **Flow Diagram** (`flow.html`) — process flows: terminator, process, decision, input/output, document, subprocess, free text; curved/elbow arrows, colors, grouping.
+- **Free Diagram** (`free.html`) — free canvas: rectangle, ellipse, diamond, text; object-inside-object, colors, grouping.
+- **Notes (Markdown)** (`notes.html`) — WYSIWYG Markdown notes editor: open a local folder, browse files, auto-save, colors/highlight, fonts, tables, collapsible sections, nested lists, raw source toggle, PDF export.
 
-> Catatan: fitur akses folder & auto-save pada Notes memakai File System Access API — butuh browser berbasis Chromium (Chrome/Edge).
+> Note: the folder access & auto-save features in Notes use the File System Access API — a Chromium-based browser (Chrome/Edge) is required.
 
-## Menjalankan secara lokal
+## Run locally
 
-Karena murni statis, cukup buka `index.html` di browser. Untuk beberapa fitur (mis. akses folder) sebaiknya dijalankan lewat server statis sederhana:
+Since it is pure static files, just open `index.html` in a browser. For some features (e.g. folder access) it is best to run via a simple static server:
 
 ```bash
 # Python 3
 python -m http.server 8000
-# lalu buka http://localhost:8000
+# then open http://localhost:8000
 
-# atau Node (jika terpasang)
+# or Node (if installed)
 npx serve .
 ```
 
-## Struktur
+## Structure
 
 ```
 .
-├── index.html        # halaman utama (daftar tools)
+├── index.html        # home page (tool list)
 ├── mindmap.html
 ├── sequence.html
 ├── flow.html
@@ -40,22 +40,22 @@ npx serve .
 └── js/
     ├── mindmap.js
     ├── sequence.js
-    ├── diagram-core.js   # dipakai flow.html & free.html
+    ├── diagram-core.js   # used by flow.html & free.html
     └── notes.js
 ```
 
-## Deploy ke GitHub Pages
+## Deploy to GitHub Pages
 
-Sudah disertakan workflow otomatis di `.github/workflows/deploy.yml`. Setelah push ke branch `main`:
+An automatic workflow is included at `.github/workflows/deploy.yml`. After pushing to the `main` branch:
 
-1. Buka repositori di GitHub → **Settings** → **Pages**.
-2. Pada **Build and deployment**, pilih **Source: GitHub Actions**.
-3. Setiap push ke `main` akan otomatis men-deploy situs.
+1. Open the repository on GitHub → **Settings** → **Pages**.
+2. Under **Build and deployment**, choose **Source: GitHub Actions**.
+3. Every push to `main` deploys the site automatically.
 
-Situs akan tersedia di `https://<username>.github.io/<nama-repo>/`.
+The site will be available at `https://<username>.github.io/<repo>/`.
 
-Alternatif tanpa Actions: Settings → Pages → Source: **Deploy from a branch** → pilih `main` / `root`. File `.nojekyll` memastikan aset disajikan apa adanya.
+Alternative without Actions: Settings → Pages → Source: **Deploy from a branch** → pick `main` / `root`. The `.nojekyll` file ensures assets are served as-is.
 
-## Lisensi
+## License
 
-Bebas digunakan. Built with love from Darjo, kota autopilot.
+Free to use. Built with love from Darjo, kota autopilot.
