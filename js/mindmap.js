@@ -37,11 +37,13 @@
     let autoLayout = true; // mode posisi: true = auto rapi, false = manual (drag bebas)
     const elById = {}; // id -> DOM element (untuk mengukur ukuran node saat menggambar garis)
 
-    // ===== Auto-save ke localStorage (agar tidak hilang bila lupa simpan) =====
+    // ===== Auto-save to localStorage (so work isn't lost) + optional file explorer =====
+    let explorer = null;
     function autoSave() {
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify({ root: root, autoLayout: autoLayout }));
-        } catch (e) { /* storage penuh / diblokir: abaikan */ }
+        } catch (e) { /* storage full / blocked: ignore */ }
+        if (explorer) explorer.markDirty(); // auto-save to the open file too
     }
     function loadFromStorage() {
         try {
@@ -814,6 +816,27 @@
 
     // Cegah menu konteks bawaan browser di kanvas (kita pakai menu klik kanan sendiri).
     canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+    // ===== Local-folder explorer (optional) =====
+    if (window.createFsExplorer && document.getElementById('mm-tree')) {
+        explorer = window.createFsExplorer({
+            ids: { tree: 'mm-tree', folderName: 'mm-folder-name', hint: 'mm-fs-hint', status: 'mm-fs-status',
+                open: 'mm-open-folder', up: 'mm-up', newFile: 'mm-new-file', refresh: 'mm-refresh' },
+            ext: 'json',
+            accept: /\.(json)$/i,
+            getContent: function () { return JSON.stringify(root, null, 2); },
+            setContent: function (text) {
+                try {
+                    const data = JSON.parse(text);
+                    const r = (data && data.root) ? data.root : data; // support {root:..} or bare root
+                    window.__mmRow = 0;
+                    root = normalize(r, 0);
+                    render();
+                } catch (e) { alert('Invalid JSON file: ' + e.message); }
+            },
+            newContent: function () { return JSON.stringify(defaultRoot(), null, 2); }
+        });
+    }
 
     // Muat mind map terakhir dari localStorage bila ada (agar tidak hilang saat lupa simpan).
     loadFromStorage();

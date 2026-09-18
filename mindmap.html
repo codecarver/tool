@@ -24,7 +24,7 @@
     </div>
 </header>
 
-<div class="container">
+<div class="container container-full">
     <div class="card">
         <div class="mm-toolbar">
             <button class="btn btn-sm" id="mm-export-json">Save (JSON)</button>
@@ -48,12 +48,26 @@
             The number badge on a node = child count; <strong>click the badge</strong> to expand/collapse. A blue dot = has a description.
             <strong>Auto</strong> layout tidies positions automatically; <strong>Manual</strong> lets you drag freely. Ctrl+drag to pan the canvas.
             On touch devices, <strong>press and hold</strong> a node to open its menu; use the zoom buttons to zoom.
-            Changes are auto-saved in this browser (still save the JSON file for backup/moving devices).
+            Use <strong>Open Folder</strong> on the left to work with local <code>.json</code> files (auto-save, rename, delete).
         </p>
-        <div id="mm-canvas" class="mm-canvas">
-            <div id="mm-stage" class="mm-stage">
-                <svg id="mm-svg" class="mm-svg" width="1000" height="600"></svg>
-                <div id="mm-nodes" class="mm-nodes"></div>
+        <div class="dg-wrap">
+            <aside class="nt-sidebar">
+                <div class="nt-side-head">
+                    <button class="btn btn-sm" id="mm-open-folder" title="Open a local folder">📂 Open</button>
+                    <button class="btn btn-sm btn-outline" id="mm-up" title="Go up one level" disabled>⬆</button>
+                    <button class="btn btn-sm btn-outline" id="mm-new-file" title="Create a new file" disabled>＋</button>
+                    <button class="btn btn-sm btn-outline" id="mm-refresh" title="Reload list" disabled>⟳</button>
+                </div>
+                <div class="nt-folder-name" id="mm-folder-name">No folder opened</div>
+                <ul class="nt-tree" id="mm-tree"></ul>
+                <p class="nt-hint" id="mm-fs-hint"></p>
+                <div class="nt-status" id="mm-fs-status" style="padding:0.4rem 0.6rem"></div>
+            </aside>
+            <div id="mm-canvas" class="mm-canvas">
+                <div id="mm-stage" class="mm-stage">
+                    <svg id="mm-svg" class="mm-svg" width="1000" height="600"></svg>
+                    <div id="mm-nodes" class="mm-nodes"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -61,6 +75,7 @@
 <footer class="app-footer">
     <span>Built with love from Darjo, kota autopilot.</span>
 </footer>
+<script src="js/fs-explorer.js"></script>
 <script src="js/mindmap.js"></script>
 </body>
 </html>

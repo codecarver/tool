@@ -252,7 +252,9 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 .dg-menu button:hover { background: #eef3ff; }
 
 /* ===== Notes (Markdown WYSIWYG) ===== */
-.container-wide { max-width: 1200px; }
+.container-wide { max-width: 1600px; }
+/* Tool pages use nearly the full viewport width */
+.container-full { max-width: none; width: 100%; margin: 1rem auto; padding: 0 1.2rem; }
 .nt-layout { display: flex; gap: 1rem; align-items: stretch; height: 70vh; min-height: 420px; }
 .nt-sidebar { flex: 0 0 240px; border: 1px solid #cbd2d9; border-radius: 8px; background: #fbfdff;
     display: flex; flex-direction: column; overflow: hidden; }
