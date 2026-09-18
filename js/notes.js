@@ -202,9 +202,9 @@
             }
             // hr
             if (/^\s*(---|\*\*\*|___)\s*$/.test(line)) { closeList(); html.push('<hr>'); i++; continue; }
-            // heading
-            const hm = line.match(/^(#{1,6})\s+(.*)$/);
-            if (hm) { closeList(); const lvl = hm[1].length; html.push('<h' + lvl + '>' + inlineMdToHtml(hm[2]) + '</h' + lvl + '>'); i++; continue; }
+            // heading (also match an empty heading like "###" used as a spacer)
+            const hm = line.match(/^(#{1,6})(?:\s+(.*))?$/);
+            if (hm) { closeList(); const lvl = hm[1].length; html.push('<h' + lvl + '>' + inlineMdToHtml(hm[2] || '') + '</h' + lvl + '>'); i++; continue; }
             // blockquote
             if (/^>\s?/.test(line)) {
                 closeList();
@@ -227,8 +227,15 @@
                 html.push(buildNestedList(items));
                 continue;
             }
-            // baris kosong
-            if (/^\s*$/.test(line)) { closeList(); i++; continue; }
+            // Baris kosong: satu baris kosong = pemisah biasa; baris kosong BERUNTUN
+            // dipertahankan sebagai spacer (paragraf kosong) agar jarak vertikal tidak hilang.
+            if (/^\s*$/.test(line)) {
+                closeList();
+                let blanks = 0;
+                while (i < lines.length && /^\s*$/.test(lines[i])) { blanks++; i++; }
+                for (let b = 1; b < blanks; b++) html.push('<p class="mm-spacer"><br></p>');
+                continue;
+            }
             // paragraf (gabungkan baris berturut-turut)
             closeList();
             const buf = [inlineMdToHtml(line)];
@@ -333,14 +340,21 @@
                     return;
                 }
                 if (/^h[1-6]$/.test(tag)) {
-                    out.push('#'.repeat(parseInt(tag[1], 10)) + ' ' + inline(c).trim()); out.push('');
+                    const ht = inline(c).trim();
+                    // empty heading (used as a spacer) -> keep the bare hashes
+                    out.push('#'.repeat(parseInt(tag[1], 10)) + (ht ? ' ' + ht : '')); out.push('');
                 } else if (tag === 'p' || tag === 'div') {
                     // Bila paragraf/div mengandung blok (details/ul/ol/blockquote/pre), proses sebagai blok.
                     if (c.querySelector('details, ul, ol, blockquote, pre, hr, h1, h2, h3, h4, h5, h6')) {
                         block(c);
                     } else {
                         const s = inline(c).replace(/\n{2,}/g, '\n').trim();
-                        out.push(s); out.push('');
+                        if (s === '') {
+                            // Empty/spacer paragraph -> keep an extra blank line so vertical spacing survives.
+                            out.push('\u0000BLANK\u0000');
+                        } else {
+                            out.push(s); out.push('');
+                        }
                     }
                 } else if (tag === 'blockquote') {
                     inline(c).split('\n').forEach(function (ln) { out.push('> ' + ln); }); out.push('');
@@ -385,8 +399,11 @@
             });
         }
         block(root);
-        // rapikan baris kosong berlebih
-        return out.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+        // tidy excess blank lines, then restore intentional spacer paragraphs as blank lines
+        let md = out.join('\n').replace(/\n{3,}/g, '\n\n');
+        md = md.replace(/\u0000BLANK\u0000/g, '');   // spacer marker -> just its surrounding newlines
+        md = md.replace(/\n{3,}/g, '\n\n\n');          // allow up to one intentional extra blank line
+        return md.trim() + '\n';
     }
 
     // ===================== Explorer folder (File System Access API) =====================
@@ -722,6 +739,22 @@
     function toggleDD(menuEl) {
         if (openDDMenu === menuEl) { closeDD(); return; }
         closeDD(); menuEl.classList.add('open'); openDDMenu = menuEl;
+        // Position as fixed under the trigger button so it is never clipped by overflow:hidden ancestors.
+        const trigger = menuEl.parentNode.querySelector('button');
+        if (trigger) {
+            const r = trigger.getBoundingClientRect();
+            menuEl.style.position = 'fixed';
+            menuEl.style.top = (r.bottom + 3) + 'px';
+            menuEl.style.left = r.left + 'px';
+            // measure then clamp within viewport
+            const mr = menuEl.getBoundingClientRect();
+            const vw = window.innerWidth, vh = window.innerHeight;
+            let left = r.left, top = r.bottom + 3;
+            if (left + mr.width > vw - 6) left = Math.max(6, vw - mr.width - 6);
+            if (top + mr.height > vh - 6) top = Math.max(6, vh - mr.height - 6);
+            menuEl.style.left = left + 'px';
+            menuEl.style.top = top + 'px';
+        }
         setTimeout(function () { document.addEventListener('click', ddOutside); }, 0);
     }
 

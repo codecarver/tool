@@ -303,6 +303,8 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 .nt-editor pre code { background: transparent; padding: 0; }
 .nt-editor hr { border: none; border-top: 1px solid #cbd2d9; margin: 1rem 0; }
 .nt-editor a { color: #1f6feb; }
+/* Spacer paragraph (from intentional blank lines) keeps a bit of vertical space */
+.nt-editor p.mm-spacer { min-height: 1em; margin: 0.2rem 0; }
 .nt-editor details { border: 1px solid #cbd2d9; border-radius: 6px; padding: 0.4rem 0.7rem; margin: 0.5rem 0; background: #fbfdff; }
 .nt-editor details > summary { cursor: pointer; font-weight: 600; color: #1f2933; outline: none; }
 .nt-editor details[open] > summary { margin-bottom: 0.4rem; }
@@ -312,17 +314,17 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 
 /* Dropdown toolbar (warna & tanggal) */
 .nt-dd { position: relative; display: inline-block; }
-.nt-dd-menu { display: none; position: absolute; top: 100%; left: 0; z-index: 100; margin-top: 3px;
+.nt-dd-menu { display: none; position: fixed; z-index: 2000;
     background: #fff; border: 1px solid #cbd2d9; border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,0.15);
-    padding: 6px; }
+    padding: 6px; max-height: 70vh; overflow: auto; }
 .nt-dd-menu.open { display: block; }
 .nt-swatch { width: 22px; height: 22px; border-radius: 4px; border: 1px solid #cbd2d9; cursor: pointer;
     padding: 0; margin: 2px; display: inline-block; font-size: 0.7rem; line-height: 20px; color: #52606d; }
 .nt-swatch:hover { outline: 2px solid #1f6feb; outline-offset: 1px; }
 .nt-dd-menu:not(.nt-date-menu) { width: 148px; }
-.nt-date-menu { min-width: 240px; max-height: 320px; overflow: auto; }
+.nt-date-menu { min-width: 280px; max-width: calc(100vw - 16px); }
 .nt-date-item { display: block; width: 100%; text-align: left; border: none; background: #fff;
-    padding: 0.4rem 0.6rem; cursor: pointer; font-size: 0.88rem; border-radius: 4px; }
+    padding: 0.45rem 0.7rem; cursor: pointer; font-size: 0.88rem; border-radius: 4px; white-space: nowrap; }
 .nt-date-item:hover { background: #eef3ff; }
 
 @media (max-width: 760px) {
