@@ -718,12 +718,7 @@
                     const text = range.toString();
                     if (/\n/.test(text)) {
                         // Multi-baris -> blok kode <pre> (bukan inline <code>).
-                        const pre = document.createElement('pre');
-                        pre.textContent = text;
-                        range.deleteContents();
-                        range.insertNode(pre);
-                        const after = document.createElement('p'); after.appendChild(document.createElement('br'));
-                        pre.parentNode.insertBefore(after, pre.nextSibling);
+                        insertCodeBlock(text);
                     } else {
                         const code = document.createElement('code');
                         code.appendChild(range.extractContents());
@@ -732,8 +727,34 @@
                 }
                 editor.focus();
             }
+            else if (act === 'codeblock') {
+                // Blok kode multi-baris. Ambil teks seleksi (bila ada) sebagai isi awal.
+                const sel = window.getSelection();
+                const seltext = (sel && sel.rangeCount && !sel.isCollapsed) ? sel.getRangeAt(0).toString() : '';
+                insertCodeBlock(seltext);
+                editor.focus();
+            }
             markDirty();
         });
+
+    // Sisipkan blok kode <pre> tingkat atas + paragraf kosong setelahnya, kursor di dalam <pre>.
+    function insertCodeBlock(text) {
+        const sel = window.getSelection();
+        const pre = document.createElement('pre');
+        pre.textContent = text || '';
+        if (sel && sel.rangeCount && !sel.isCollapsed) sel.getRangeAt(0).deleteContents();
+        // cari blok tingkat atas untuk menyisipkan setelahnya
+        let anchor = null;
+        if (sel && sel.rangeCount) { let n = sel.getRangeAt(0).startContainer; while (n && n.parentNode !== editor) n = n.parentNode; anchor = n; }
+        if (anchor && anchor.parentNode === editor) anchor.parentNode.insertBefore(pre, anchor.nextSibling);
+        else editor.appendChild(pre);
+        const after = document.createElement('p'); after.appendChild(document.createElement('br'));
+        pre.parentNode.insertBefore(after, pre.nextSibling);
+        // taruh kursor di dalam <pre>
+        const r = document.createRange();
+        r.selectNodeContents(pre); r.collapse(true);
+        const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    }
     });
     blockSel.addEventListener('change', function () {
         const v = blockSel.value;
@@ -765,6 +786,44 @@
     });
 
     // Tab / Shift+Tab di dalam daftar: indent (buat sub-list) / outdent.
+    // Di dalam blok kode <pre>: Enter menyisipkan baris baru; Enter pada baris kosong terakhir
+    // keluar dari blok ke paragraf setelahnya. Tab menyisipkan 2 spasi.
+    editor.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter' && e.key !== 'Tab') return;
+        const sel = window.getSelection();
+        if (!sel || !sel.rangeCount) return;
+        let node = sel.getRangeAt(0).startContainer;
+        while (node && node !== editor && !(node.nodeType === 1 && node.tagName === 'PRE')) node = node.parentNode;
+        if (!node || node.tagName !== 'PRE') return; // bukan di dalam pre
+        const pre = node;
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            document.execCommand('insertText', false, '  ');
+            markDirty();
+            return;
+        }
+        // Enter di dalam <pre>
+        e.preventDefault();
+        const text = pre.textContent;
+        // Keluar bila blok berakhir dengan baris kosong (double-Enter) dan kursor di ujung.
+        const atEnd = sel.getRangeAt(0).endOffset >= (sel.getRangeAt(0).endContainer.length || 0)
+            && sel.getRangeAt(0).endContainer === pre.lastChild || sel.getRangeAt(0).endContainer === pre;
+        if (/\n\s*$/.test(text) && atEnd) {
+            // hapus newline kosong terakhir lalu pindah ke paragraf setelah pre
+            pre.textContent = text.replace(/\n\s*$/, '');
+            let after = pre.nextElementSibling;
+            if (!after || after.tagName === 'PRE') {
+                after = document.createElement('p'); after.appendChild(document.createElement('br'));
+                pre.parentNode.insertBefore(after, pre.nextSibling);
+            }
+            const r = document.createRange(); r.setStart(after, 0); r.collapse(true);
+            sel.removeAllRanges(); sel.addRange(r);
+        } else {
+            document.execCommand('insertText', false, '\n');
+        }
+        markDirty();
+    });
+
     editor.addEventListener('keydown', function (e) {
         if (e.key !== 'Tab') return;
         // hanya bila kursor berada di dalam <li>
