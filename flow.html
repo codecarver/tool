@@ -51,12 +51,27 @@
             double-click a line to add a <strong>label</strong>, or <strong>right-click</strong> a line for the menu (label/straighten/curved or elbow style/delete).
             Use <strong>+ Text</strong> to write free text outside shapes.
             <strong>Drag on empty space</strong> to select multiple nodes (or <strong>Shift+click</strong> one by one), then right-click &rarr; <strong>Group</strong> to move them together (right-click &rarr; Ungroup to undo).
-            On touch devices, <strong>press and hold</strong> a node or line to open its menu. Auto-saved in this browser.
+            On touch devices, <strong>press and hold</strong> a node or line to open its menu.
+            Use <strong>Open Folder</strong> on the left to work with local <code>.json</code> files (auto-save, rename, delete).
         </p>
-        <div id="dg-canvas" class="mm-canvas">
-            <div id="dg-stage" class="mm-stage">
-                <svg id="dg-svg" class="mm-svg" width="600" height="400"></svg>
-                <div id="dg-nodes" class="mm-nodes"></div>
+        <div class="dg-wrap">
+            <aside class="nt-sidebar">
+                <div class="nt-side-head">
+                    <button class="btn btn-sm" id="dg-open-folder" title="Open a local folder">📂 Open</button>
+                    <button class="btn btn-sm btn-outline" id="dg-up" title="Go up one level" disabled>⬆</button>
+                    <button class="btn btn-sm btn-outline" id="dg-new-file" title="Create a new file" disabled>＋</button>
+                    <button class="btn btn-sm btn-outline" id="dg-refresh" title="Reload list" disabled>⟳</button>
+                </div>
+                <div class="nt-folder-name" id="dg-folder-name">No folder opened</div>
+                <ul class="nt-tree" id="dg-tree"></ul>
+                <p class="nt-hint" id="dg-fs-hint"></p>
+                <div class="nt-status" id="dg-fs-status" style="padding:0.4rem 0.6rem"></div>
+            </aside>
+            <div id="dg-canvas" class="mm-canvas">
+                <div id="dg-stage" class="mm-stage">
+                    <svg id="dg-svg" class="mm-svg" width="600" height="400"></svg>
+                    <div id="dg-nodes" class="mm-nodes"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -64,10 +79,13 @@
 <footer class="app-footer">
     <span>Built with love from Darjo, kota autopilot.</span>
 </footer>
+<script src="js/fs-explorer.js"></script>
 <script src="js/diagram-core.js"></script>
 <script>
     createDiagram({
         storageKey: 'tools.flow.v1', fileBase: 'flow',
+        explorer: { tree: 'dg-tree', folderName: 'dg-folder-name', hint: 'dg-fs-hint', status: 'dg-fs-status',
+            open: 'dg-open-folder', up: 'dg-up', newFile: 'dg-new-file', refresh: 'dg-refresh' },
         canvasId: 'dg-canvas', svgId: 'dg-svg', nodesId: 'dg-nodes', stageId: 'dg-stage',
         exportJsonId: 'dg-export-json', exportPngId: 'dg-export-png', importId: 'dg-import',
         resetId: 'dg-reset', zoomInId: 'dg-zoom-in', zoomOutId: 'dg-zoom-out',

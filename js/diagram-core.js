@@ -51,7 +51,11 @@ window.createDiagram = function (opts) {
     }
 
     // ===== storage =====
-    function save() { try { localStorage.setItem(storageKey, JSON.stringify({ model: model })); } catch (e) {} }
+    let explorer = null; // local-folder explorer (optional)
+    function save() {
+        try { localStorage.setItem(storageKey, JSON.stringify({ model: model })); } catch (e) {}
+        if (explorer) explorer.markDirty(); // auto-save to the open file too
+    }
     function loadStored() {
         try {
             const raw = localStorage.getItem(storageKey);
@@ -937,6 +941,26 @@ window.createDiagram = function (opts) {
         // capture=false: biarkan node menangani mousedown-nya sendiri; hanya area kosong yang sampai sini.
         canvas.addEventListener('mousedown', down);
     })();
+
+    // ===== Local-folder explorer (optional) =====
+    if (opts.explorer && window.createFsExplorer) {
+        explorer = window.createFsExplorer({
+            ids: opts.explorer,
+            ext: 'json',
+            accept: /\.(json)$/i,
+            getContent: function () { return JSON.stringify(model, null, 2); },
+            setContent: function (text) {
+                try {
+                    const d = JSON.parse(text);
+                    if (d && Array.isArray(d.nodes)) model = d;
+                    else if (d && d.model && Array.isArray(d.model.nodes)) model = d.model;
+                    else return;
+                    bumpCounters(); render();
+                } catch (e) { alert('Invalid JSON file: ' + e.message); }
+            },
+            newContent: function () { return JSON.stringify({ nodes: [], edges: [] }, null, 2); }
+        });
+    }
 
     if (!loadStored()) seed();
     applyZoom();

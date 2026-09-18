@@ -180,6 +180,15 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 .sq-canvas { flex: 2 1 400px; overflow: auto; border: 1px solid #cbd2d9; border-radius: 8px;
     background: #fbfdff; min-height: 380px; }
 
+/* ===== Diagram + file-explorer layout (flow, free, sequence) ===== */
+.dg-wrap, .sq-wrap { display: flex; gap: 1rem; align-items: stretch; }
+.dg-wrap > .mm-canvas, .sq-wrap > .sq-layout { flex: 1; min-width: 0; }
+.dg-wrap .nt-sidebar, .sq-wrap .nt-sidebar { flex: 0 0 220px; height: 600px; }
+@media (max-width: 760px) {
+    .dg-wrap, .sq-wrap { flex-direction: column; }
+    .dg-wrap .nt-sidebar, .sq-wrap .nt-sidebar { flex: 0 0 auto; height: auto; max-height: 200px; }
+}
+
 /* ===== Generic diagram (flow & free) ===== */
 .dg-node { position: absolute; display: inline-flex; align-items: center; gap: 0.25rem;
     background: #eef3ff; border: 2px solid #1f6feb; padding: 0.5rem 0.7rem; cursor: grab;

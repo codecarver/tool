@@ -39,17 +39,32 @@
             Overall title: <code>title: Title</code>.
             Separator: <code>---</code> or <code>--- text</code>. Note: <code>note: text</code>.
             Line break in a message: type <code>\n</code> (e.g. <code>A -&gt; B: line1\nline2</code>).
-            All optional. Changes are auto-saved in this browser.
+            All optional. Use <strong>Open Folder</strong> on the left to work with local <code>.json</code> files (auto-save, rename, delete).
         </p>
-        <div class="sq-layout">
-            <textarea id="sq-input" class="sq-input" spellcheck="false"></textarea>
-            <div class="sq-canvas"><svg id="sq-svg" width="600" height="400"></svg></div>
+        <div class="sq-wrap">
+            <aside class="nt-sidebar">
+                <div class="nt-side-head">
+                    <button class="btn btn-sm" id="sq-open-folder" title="Open a local folder">📂 Open</button>
+                    <button class="btn btn-sm btn-outline" id="sq-up" title="Go up one level" disabled>⬆</button>
+                    <button class="btn btn-sm btn-outline" id="sq-new-file" title="Create a new file" disabled>＋</button>
+                    <button class="btn btn-sm btn-outline" id="sq-refresh" title="Reload list" disabled>⟳</button>
+                </div>
+                <div class="nt-folder-name" id="sq-folder-name">No folder opened</div>
+                <ul class="nt-tree" id="sq-tree"></ul>
+                <p class="nt-hint" id="sq-fs-hint"></p>
+                <div class="nt-status" id="sq-fs-status" style="padding:0.4rem 0.6rem"></div>
+            </aside>
+            <div class="sq-layout">
+                <textarea id="sq-input" class="sq-input" spellcheck="false"></textarea>
+                <div class="sq-canvas"><svg id="sq-svg" width="600" height="400"></svg></div>
+            </div>
         </div>
     </div>
 </div>
 <footer class="app-footer">
     <span>Built with love from Darjo, kota autopilot.</span>
 </footer>
+<script src="js/fs-explorer.js"></script>
 <script src="js/sequence.js"></script>
 </body>
 </html>

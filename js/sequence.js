@@ -226,7 +226,11 @@
     }
 
     // ===== Storage =====
-    function autoSave() { try { localStorage.setItem(STORAGE_KEY, input.value); } catch (e) {} }
+    let explorer = null; // local-folder explorer (optional)
+    function autoSave() {
+        try { localStorage.setItem(STORAGE_KEY, input.value); } catch (e) {}
+        if (explorer) explorer.markDirty();
+    }
     function load() { try { return localStorage.getItem(STORAGE_KEY); } catch (e) { return null; } }
 
     // ===== Save/Import (JSON) & Export PNG — konsisten dengan mind map =====
@@ -296,6 +300,23 @@
         if (confirm('Reset to the initial example?')) { try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
             input.value = SAMPLE; render(); }
     });
+
+    // ===== Local-folder explorer (optional) =====
+    if (window.createFsExplorer && document.getElementById('sq-tree')) {
+        explorer = window.createFsExplorer({
+            ids: { tree: 'sq-tree', folderName: 'sq-folder-name', hint: 'sq-fs-hint', status: 'sq-fs-status',
+                open: 'sq-open-folder', up: 'sq-up', newFile: 'sq-new-file', refresh: 'sq-refresh' },
+            ext: 'json',
+            accept: /\.(json)$/i,
+            getContent: function () { return JSON.stringify({ text: input.value }, null, 2); },
+            setContent: function (text) {
+                try { const d = JSON.parse(text); input.value = (d && d.text != null) ? d.text : text; }
+                catch (e) { input.value = text; }
+                render();
+            },
+            newContent: function () { return JSON.stringify({ text: SAMPLE }, null, 2); }
+        });
+    }
 
     const saved = load();
     input.value = (saved !== null && saved !== '') ? saved : SAMPLE;
