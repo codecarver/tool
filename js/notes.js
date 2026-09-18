@@ -536,20 +536,21 @@
     // Pastikan setiap <details> tingkat atas punya paragraf setelahnya, dan editor diakhiri
     // paragraf kosong — supaya kursor bisa keluar dari collapsible dan menulis di bawahnya.
     function ensureEditableGaps() {
+        // Blok yang butuh paragraf editable setelahnya agar kursor bisa keluar & menulis di bawahnya.
+        const BLOCKS = ['DETAILS', 'PRE', 'TABLE', 'UL', 'OL', 'BLOCKQUOTE', 'HR'];
+        function newP() { const p = document.createElement('p'); p.appendChild(document.createElement('br')); return p; }
         const kids = Array.prototype.slice.call(editor.children);
         kids.forEach(function (el) {
-            if (el.tagName === 'DETAILS') {
+            if (BLOCKS.indexOf(el.tagName) !== -1) {
                 const next = el.nextElementSibling;
-                if (!next || next.tagName === 'DETAILS') {
-                    const p = document.createElement('p'); p.appendChild(document.createElement('br'));
-                    editor.insertBefore(p, el.nextSibling);
+                if (!next || BLOCKS.indexOf(next.tagName) !== -1) {
+                    editor.insertBefore(newP(), el.nextSibling);
                 }
             }
         });
         const last = editor.lastElementChild;
-        if (!last || last.tagName === 'DETAILS') {
-            const p = document.createElement('p'); p.appendChild(document.createElement('br'));
-            editor.appendChild(p);
+        if (!last || BLOCKS.indexOf(last.tagName) !== -1) {
+            editor.appendChild(newP());
         }
     }
 
