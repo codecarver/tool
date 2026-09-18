@@ -42,12 +42,14 @@
             All optional. Use <strong>Open Folder</strong> on the left to work with local <code>.json</code> files (auto-save, rename, delete).
         </p>
         <div class="sq-wrap">
+            <button class="nt-side-toggle" data-sidebar-toggle title="Show/hide file explorer">☰ Files</button>
             <aside class="nt-sidebar">
                 <div class="nt-side-head">
                     <button class="btn btn-sm" id="sq-open-folder" title="Open a local folder">📂 Open</button>
                     <button class="btn btn-sm btn-outline" id="sq-up" title="Go up one level" disabled>⬆</button>
                     <button class="btn btn-sm btn-outline" id="sq-new-file" title="Create a new file" disabled>＋</button>
                     <button class="btn btn-sm btn-outline" id="sq-refresh" title="Reload list" disabled>⟳</button>
+                    <button class="btn btn-sm btn-outline nt-side-collapse" data-sidebar-toggle title="Hide file explorer">«</button>
                 </div>
                 <div class="nt-folder-name" id="sq-folder-name">No folder opened</div>
                 <ul class="nt-tree" id="sq-tree"></ul>
@@ -66,5 +68,6 @@
 </footer>
 <script src="js/fs-explorer.js"></script>
 <script src="js/sequence.js"></script>
+<script src="js/sidebar-toggle.js"></script>
 </body>
 </html>

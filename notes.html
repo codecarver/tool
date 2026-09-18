@@ -26,12 +26,14 @@
     <div class="card">
         <div class="nt-layout">
             <!-- Sidebar explorer -->
+            <button class="nt-side-toggle" data-sidebar-toggle title="Show/hide file explorer">☰ Files</button>
             <aside class="nt-sidebar">
                 <div class="nt-side-head">
                     <button class="btn btn-sm" id="nt-open-folder" title="Open a local folder">📂 Open Folder</button>
                     <button class="btn btn-sm btn-outline" id="nt-up" title="Go up one level" disabled>⬆</button>
                     <button class="btn btn-sm btn-outline" id="nt-new-file" title="Create a new note" disabled>＋</button>
                     <button class="btn btn-sm btn-outline" id="nt-refresh" title="Reload list" disabled>⟳</button>
+                    <button class="btn btn-sm btn-outline nt-side-collapse" data-sidebar-toggle title="Hide file explorer">«</button>
                 </div>
                 <div class="nt-folder-name" id="nt-folder-name">No folder opened</div>
                 <ul class="nt-tree" id="nt-tree"></ul>
@@ -114,5 +116,6 @@
     <span>Built with love from Darjo, kota autopilot.</span>
 </footer>
 <script src="js/notes.js"></script>
+<script src="js/sidebar-toggle.js"></script>
 </body>
 </html>

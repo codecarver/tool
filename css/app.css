@@ -181,13 +181,25 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
     background: #fbfdff; min-height: 380px; }
 
 /* ===== Diagram + file-explorer layout (flow, free, sequence) ===== */
-.dg-wrap, .sq-wrap { display: flex; gap: 1rem; align-items: stretch; }
+.dg-wrap, .sq-wrap { display: flex; gap: 1rem; align-items: stretch; position: relative; }
 .dg-wrap > .mm-canvas, .sq-wrap > .sq-layout { flex: 1; min-width: 0; }
 .dg-wrap .nt-sidebar, .sq-wrap .nt-sidebar { flex: 0 0 220px; height: 600px; }
 @media (max-width: 760px) {
     .dg-wrap, .sq-wrap { flex-direction: column; }
     .dg-wrap .nt-sidebar, .sq-wrap .nt-sidebar { flex: 0 0 auto; height: auto; max-height: 200px; }
 }
+
+/* ===== Collapsible file-explorer sidebar (all tools) ===== */
+.nt-layout { position: relative; }
+/* Small "«" button inside the sidebar header to collapse it */
+.nt-side-collapse { margin-left: auto; }
+/* Floating "☰ Files" button to re-open a collapsed sidebar; hidden while expanded */
+.nt-side-toggle { display: none; align-self: flex-start; margin: 0 0 0 0; border: 1px solid #cbd2d9;
+    background: #fff; color: #1f2933; border-radius: 6px; padding: 0.35rem 0.6rem; cursor: pointer;
+    font-size: 0.85rem; flex: 0 0 auto; height: fit-content; }
+.nt-side-toggle:hover { background: #eef3ff; border-color: #1f6feb; }
+.sidebar-collapsed > .nt-sidebar { display: none; }
+.sidebar-collapsed > .nt-side-toggle { display: inline-block; }
 
 /* ===== Generic diagram (flow & free) ===== */
 .dg-node { position: absolute; display: inline-flex; align-items: center; gap: 0.25rem;
