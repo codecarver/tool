@@ -789,6 +789,17 @@
     document.getElementById('nt-color-btn').addEventListener('click', function (e) { e.stopPropagation(); toggleDD(colorMenu); });
     document.getElementById('nt-hilite-btn').addEventListener('click', function (e) { e.stopPropagation(); toggleDD(hiliteMenu); });
 
+    // Generic grouped dropdowns (Lists, Insert, File) triggered by [data-dd] buttons.
+    document.querySelectorAll('#nt-toolbar [data-dd]').forEach(function (btn) {
+        const menu = btn.parentNode.querySelector('.nt-dd-menu');
+        if (!menu) return;
+        btn.addEventListener('click', function (e) { e.stopPropagation(); toggleDD(menu); });
+        // Close the dropdown after choosing an item inside it.
+        menu.querySelectorAll('button').forEach(function (item) {
+            item.addEventListener('click', function () { closeDD(); });
+        });
+    });
+
     // ===== Menu tanggal/waktu =====
     function dateFormats() {
         const d = new Date();

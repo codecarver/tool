@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content"/>
     <title>Notes (Markdown)</title>
-    <link rel="stylesheet" href="css/app.css?v=6"/>
+    <link rel="stylesheet" href="css/app.css?v=7"/>
 </head>
 <body>
 <header class="landing-hero landing-hero-sm">
@@ -28,12 +28,12 @@
             <summary>How to use</summary>
             <div class="tool-help-body">
                 <ul>
-                    <li>Click <strong>Open Folder</strong> to pick a local folder. <code>.md</code>/<code>.txt</code> files appear on the left; click a file to open, or use the <strong>⋯</strong> button to rename/delete.</li>
-                    <li>Type to edit. Toolbar formatting (bold/italic/heading/list) is stored as Markdown.</li>
+                    <li>Click <strong>Open Folder</strong> in the sidebar to pick a local folder. <code>.md</code>/<code>.txt</code> files appear there; click to open, or use the <strong>⋯</strong> button to rename/delete.</li>
+                    <li>Type to edit. Toolbar: <b>B</b>/<i>I</i>/<s>S</s> for inline format; <strong>☰▾</strong> for lists; <strong>＋▾</strong> to insert link, divider, code, table, or a collapsible section.</li>
                     <li>Inside a list, press <strong>Tab</strong> to nest a sub-list and <strong>Shift+Tab</strong> to go up a level.</li>
-                    <li><strong>Multi-line code block</strong>: click <strong>▤ Code</strong> (or select text then click). Inside it, <strong>Enter</strong> = new line, <strong>Tab</strong> = 2 spaces, <strong>Enter on an empty line</strong> exits the block.</li>
-                    <li>Also: <strong>text color</strong> &amp; <strong>highlight</strong> (select text first), <strong>date/time</strong>, <strong>collapsible</strong> sections, <strong>tables</strong>, and <strong>PDF export</strong>.</li>
-                    <li>Use <strong>Raw</strong> to view/fix the underlying Markdown (<strong>Wrap</strong> toggles word wrap). A literal <code>&lt;br&gt;</code> renders as a line break.</li>
+                    <li><strong>Multi-line code block</strong>: use <strong>＋▾ → Code block</strong>. Inside it, <strong>Enter</strong> = new line, <strong>Tab</strong> = 2 spaces, <strong>Enter on an empty line</strong> exits the block.</li>
+                    <li><strong>A▾</strong> = text color, highlight, and insert <strong>date/time</strong> (select text first for color).</li>
+                    <li><strong>💾</strong> saves. The <strong>⋯▾</strong> menu has Save as…, Export PDF, Toggle Raw source, and word-wrap. A literal <code>&lt;br&gt;</code> renders as a line break.</li>
                     <li><strong>Auto-save</strong> writes back to the file automatically. Requires a Chromium-based browser (Chrome/Edge) for folder access.</li>
                 </ul>
             </div>
@@ -66,7 +66,7 @@
                         <option value="pre">Code</option>
                     </select>
                     <select id="nt-font" title="Font family">
-                        <option value="">Font: Default</option>
+                        <option value="">Font</option>
                         <option value="Arial, Helvetica, sans-serif">Arial</option>
                         <option value="'Times New Roman', Times, serif">Times New Roman</option>
                         <option value="Georgia, serif">Georgia</option>
@@ -76,16 +76,32 @@
                         <option value="Tahoma, sans-serif">Tahoma</option>
                         <option value="'Comic Sans MS', cursive">Comic Sans MS</option>
                     </select>
+                    <span class="nt-sep"></span>
+                    <!-- Inline formatting -->
                     <button type="button" data-cmd="bold" title="Bold (Ctrl+B)"><b>B</b></button>
                     <button type="button" data-cmd="italic" title="Italic (Ctrl+I)"><i>I</i></button>
                     <button type="button" data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
-                    <button type="button" data-cmd="insertUnorderedList" title="Bulleted list">• List</button>
-                    <button type="button" data-cmd="insertOrderedList" title="Numbered list">1. List</button>
-                    <button type="button" data-act="code" title="Inline code">&lt;/&gt;</button>
-                    <button type="button" data-act="codeblock" title="Multi-line code block">▤ Code</button>
-                    <button type="button" data-act="link" title="Link">🔗</button>
-                    <button type="button" data-act="hr" title="Divider">―</button>
-                    <span class="nt-sep"></span>
+                    <!-- Lists group -->
+                    <div class="nt-dd">
+                        <button type="button" data-dd title="Lists">☰▾</button>
+                        <div class="nt-dd-menu nt-menu-list">
+                            <button type="button" data-cmd="insertUnorderedList">• Bulleted list</button>
+                            <button type="button" data-cmd="insertOrderedList">1. Numbered list</button>
+                        </div>
+                    </div>
+                    <!-- Insert group (link, divider, code, table, collapsible) -->
+                    <div class="nt-dd">
+                        <button type="button" data-dd title="Insert">＋▾</button>
+                        <div class="nt-dd-menu nt-menu-list">
+                            <button type="button" data-act="link">🔗 Link</button>
+                            <button type="button" data-act="hr">― Divider</button>
+                            <button type="button" data-act="code">&lt;/&gt; Inline code</button>
+                            <button type="button" data-act="codeblock">▤ Code block</button>
+                            <button type="button" data-act="table">▦ Table</button>
+                            <button type="button" data-act="details">▸ Collapsible</button>
+                        </div>
+                    </div>
+                    <!-- Colors & date -->
                     <div class="nt-dd">
                         <button type="button" id="nt-color-btn" title="Text color"><span style="color:#d64545">A</span>▾</button>
                         <div class="nt-dd-menu" id="nt-color-menu"></div>
@@ -98,17 +114,21 @@
                         <button type="button" id="nt-date-btn" title="Insert date/time">📅▾</button>
                         <div class="nt-dd-menu nt-date-menu" id="nt-date-menu"></div>
                     </div>
-                    <button type="button" data-act="details" title="Collapsible section">▸ Fold</button>
-                    <button type="button" data-act="table" title="Insert table">▦ Table</button>
                     <span class="nt-sep"></span>
+                    <!-- File / export group -->
                     <label class="nt-autosave" title="Auto-save to file">
                         <input type="checkbox" id="nt-autosave" checked/> Auto-save
                     </label>
-                    <button class="btn btn-sm" id="nt-save" title="Save (Ctrl+S)">Save</button>
-                    <button class="btn btn-sm btn-outline" id="nt-saveas" title="Save as a new file">Save as…</button>
-                    <button class="btn btn-sm btn-outline" id="nt-pdf" title="Export to PDF">PDF</button>
-                    <button class="btn btn-sm btn-outline" id="nt-raw" title="Show/edit raw Markdown source">Raw</button>
-                    <button class="btn btn-sm btn-outline" id="nt-wrap" title="Toggle word wrap in Raw view">Wrap</button>
+                    <button class="btn btn-sm" id="nt-save" title="Save (Ctrl+S)">💾</button>
+                    <div class="nt-dd">
+                        <button type="button" data-dd class="btn btn-sm btn-outline" title="File &amp; export">⋯▾</button>
+                        <div class="nt-dd-menu nt-menu-list">
+                            <button type="button" id="nt-saveas">Save as…</button>
+                            <button type="button" id="nt-pdf">Export PDF</button>
+                            <button type="button" id="nt-raw">Toggle Raw source</button>
+                            <button type="button" id="nt-wrap">Toggle word wrap (Raw)</button>
+                        </div>
+                    </div>
                     <span class="nt-status" id="nt-status"></span>
                 </div>
                 <div class="nt-editor" id="nt-editor" contenteditable="true" spellcheck="false"></div>
@@ -120,7 +140,7 @@
 <footer class="app-footer">
     <span>Built with love from Darjo, kota autopilot.</span>
 </footer>
-<script src="js/notes.js?v=6"></script>
-<script src="js/sidebar-toggle.js?v=6"></script>
+<script src="js/notes.js?v=7"></script>
+<script src="js/sidebar-toggle.js?v=7"></script>
 </body>
 </html>
