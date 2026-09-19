@@ -421,9 +421,13 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
     .nt-layout { flex-direction: column; height: auto; }
     .nt-sidebar { flex: 0 0 auto; max-height: 200px; }
     .nt-main { min-height: auto; overflow: visible; max-width: 100%; }
-    .nt-editor, .nt-raw { min-height: 60vh; height: auto; overflow: visible; max-width: 100%; }
-    /* Wide tables scroll horizontally instead of pushing the page wider */
-    .nt-editor table { display: block; width: max-content; max-width: 100%; overflow-x: auto; }
+    .nt-editor, .nt-raw { min-height: 60vh; height: auto; overflow: visible;
+        width: 100%; max-width: 100%; box-sizing: border-box; }
+    /* Wide tables scroll horizontally inside their own box, bounded to the screen width
+       (calc keeps them within the viewport regardless of ancestor widths). */
+    .nt-editor table { display: block; width: max-content; max-width: calc(100vw - 44px);
+        overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .nt-editor td, .nt-editor th { white-space: nowrap; }
     /* Long words / code wrap so paragraphs don't overflow */
     .nt-editor { overflow-wrap: anywhere; }
     .nt-editor pre { white-space: pre-wrap; overflow-wrap: anywhere; }
