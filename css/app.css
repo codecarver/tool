@@ -407,8 +407,13 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
     /* Notes: stack sidebar above editor; give editor room */
     .nt-layout { flex-direction: column; height: auto; }
     .nt-sidebar { flex: 0 0 auto; max-height: 200px; }
-    .nt-main { min-height: 60vh; }
+    .nt-main { min-height: 60vh; overflow: visible; }
     .nt-editor, .nt-raw { min-height: 55vh; }
+    /* Notes toolbar sticks to the top of the viewport while editing on mobile */
+    .nt-toolbar {
+        position: sticky; top: 0; z-index: 50;
+        background: #f7f9fb; box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
 
     /* Context menus & dropdowns: bigger tap targets, fit within screen */
     .dg-menu { min-width: 180px; max-width: calc(100vw - 20px); }
