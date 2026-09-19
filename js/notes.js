@@ -1074,4 +1074,23 @@
     // Initial sample content
     editor.innerHTML = mdToHtml('# Welcome\n\nA WYSIWYG **Markdown** editor. Open a folder on the left to start.\n\n- Click *Open Folder*\n- Pick a `.md` file\n- Type, and **auto-save** will write it back to the file');
     ensureEditableGaps();
+
+    // Mobile keyboard fallback: keep the toolbar pinned to the top of the VISIBLE area
+    // (visual viewport) even when the on-screen keyboard shrinks the view. This complements
+    // the `interactive-widget=resizes-content` viewport hint.
+    (function stickyToolbarOnMobile() {
+        const toolbar = document.getElementById('nt-toolbar');
+        if (!toolbar || !window.visualViewport) return;
+        const vv = window.visualViewport;
+        function isMobile() { return window.matchMedia('(max-width: 760px)').matches; }
+        function update() {
+            if (!isMobile()) { toolbar.style.transform = ''; return; }
+            // offsetTop of the visual viewport relative to layout viewport when scrolled with keyboard open
+            const shift = Math.max(0, vv.offsetTop);
+            toolbar.style.transform = shift ? ('translateY(' + shift + 'px)') : '';
+        }
+        vv.addEventListener('resize', update);
+        vv.addEventListener('scroll', update);
+        window.addEventListener('scroll', update, { passive: true });
+    })();
 })();
