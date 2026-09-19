@@ -177,10 +177,10 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 .tool-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.12); transform: translateY(-2px); }
 
 /* ===== Sequence diagram ===== */
-.sq-layout { display: flex; gap: 1rem; flex-wrap: wrap; }
-.sq-input { flex: 1 1 260px; min-height: 380px; font-family: ui-monospace, Menlo, Consolas, monospace;
+.sq-layout { display: flex; gap: 1rem; flex-wrap: wrap; min-width: 0; }
+.sq-input { flex: 1 1 260px; min-width: 0; min-height: 380px; font-family: ui-monospace, Menlo, Consolas, monospace;
     font-size: 0.9rem; padding: 0.6rem; border: 1px solid #cbd2d9; border-radius: 8px; resize: vertical; }
-.sq-canvas { flex: 2 1 400px; overflow: auto; border: 1px solid #cbd2d9; border-radius: 8px;
+.sq-canvas { flex: 2 1 400px; min-width: 0; overflow: auto; border: 1px solid #cbd2d9; border-radius: 8px;
     background: #fbfdff; min-height: 380px; }
 
 /* ===== Diagram + file-explorer layout (flow, free, sequence) ===== */
@@ -387,8 +387,14 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 
 /* ===== Mobile-friendly tweaks for tools ===== */
 @media (max-width: 760px) {
-    .container-wide, .container { padding: 0 0.6rem; margin: 0.8rem auto; }
-    .card { padding: 0.75rem; }
+    body { overflow-x: hidden; }
+    .container-wide, .container, .container-full { padding: 0 0.6rem; margin: 0.8rem auto; max-width: 100%; }
+    /* clip horizontally (allows vertical) so wide content can't push the page,
+       without trapping the sticky Notes toolbar */
+    .card { padding: 0.75rem; max-width: 100%; overflow-x: clip; }
+    /* Sequence: canvas scrolls horizontally within its frame, never past the screen */
+    .sq-canvas { max-width: 100%; overflow: auto; }
+    .sq-canvas svg { max-width: none; }
 
     /* Toolbars: keep buttons compact & scrollable instead of full-width stacking */
     .mm-toolbar, .nt-toolbar {
@@ -414,8 +420,13 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
        sticky toolbar can pin to the top of the viewport while typing. */
     .nt-layout { flex-direction: column; height: auto; }
     .nt-sidebar { flex: 0 0 auto; max-height: 200px; }
-    .nt-main { min-height: auto; overflow: visible; }
-    .nt-editor, .nt-raw { min-height: 60vh; height: auto; overflow: visible; }
+    .nt-main { min-height: auto; overflow: visible; max-width: 100%; }
+    .nt-editor, .nt-raw { min-height: 60vh; height: auto; overflow: visible; max-width: 100%; }
+    /* Wide tables scroll horizontally instead of pushing the page wider */
+    .nt-editor table { display: block; width: max-content; max-width: 100%; overflow-x: auto; }
+    /* Long words / code wrap so paragraphs don't overflow */
+    .nt-editor { overflow-wrap: anywhere; }
+    .nt-editor pre { white-space: pre-wrap; overflow-wrap: anywhere; }
     /* Notes toolbar sticks to the top of the viewport while editing on mobile */
     .nt-toolbar {
         position: sticky; top: 0; z-index: 50;
