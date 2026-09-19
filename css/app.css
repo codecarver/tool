@@ -358,6 +358,9 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 .nt-editor table { border-collapse: collapse; width: 100%; margin: 0.6rem 0; }
 .nt-editor th, .nt-editor td { border: 1px solid #cbd2d9; padding: 0.4rem 0.6rem; text-align: left; min-width: 40px; }
 .nt-editor th { background: #f0f3f6; font-weight: 600; }
+/* Scrollable wrapper around tables so wide tables never overflow the editor frame */
+.nt-editor .nt-table-wrap { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0.6rem 0; }
+.nt-editor .nt-table-wrap > table { margin: 0; }
 
 /* Dropdown toolbar (warna & tanggal) */
 .nt-dd { position: relative; display: inline-block; }
@@ -423,10 +426,9 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
     .nt-main { min-height: auto; overflow: visible; max-width: 100%; }
     .nt-editor, .nt-raw { min-height: 60vh; height: auto; overflow: visible;
         width: 100%; max-width: 100%; box-sizing: border-box; }
-    /* Wide tables scroll horizontally inside their own box, bounded to the screen width
-       (calc keeps them within the viewport regardless of ancestor widths). */
-    .nt-editor table { display: block; width: max-content; max-width: calc(100vw - 44px);
-        overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    /* Wide tables: the .nt-table-wrap scrolls; cells stay on one line to keep columns readable. */
+    .nt-editor .nt-table-wrap { max-width: 100%; overflow-x: auto; }
+    .nt-editor table { width: max-content; max-width: none; }
     .nt-editor td, .nt-editor th { white-space: nowrap; }
     /* Long words / code wrap so paragraphs don't overflow */
     .nt-editor { overflow-wrap: anywhere; }

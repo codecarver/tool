@@ -347,8 +347,8 @@
                     // empty heading (used as a spacer) -> keep the bare hashes
                     out.push('#'.repeat(parseInt(tag[1], 10)) + (ht ? ' ' + ht : '')); out.push('');
                 } else if (tag === 'p' || tag === 'div') {
-                    // Bila paragraf/div mengandung blok (details/ul/ol/blockquote/pre), proses sebagai blok.
-                    if (c.querySelector('details, ul, ol, blockquote, pre, hr, h1, h2, h3, h4, h5, h6')) {
+                    // Bila paragraf/div mengandung blok (details/ul/ol/blockquote/pre/table), proses sebagai blok.
+                    if (c.querySelector('details, ul, ol, blockquote, pre, table, hr, h1, h2, h3, h4, h5, h6')) {
                         block(c);
                     } else {
                         const s = inline(c).replace(/\n{2,}/g, '\n').trim();
@@ -672,22 +672,38 @@
         });
     }
 
+    // Wrap wide tables in a horizontally-scrollable container so they never overflow the frame.
+    function wrapTables(root) {
+        root.querySelectorAll('table').forEach(function (tbl) {
+            const parent = tbl.parentNode;
+            if (parent && parent.classList && parent.classList.contains('nt-table-wrap')) return; // already wrapped
+            const wrap = document.createElement('div');
+            wrap.className = 'nt-table-wrap';
+            wrap.setAttribute('contenteditable', 'false'); // wrapper itself not editable; table stays editable
+            parent.insertBefore(wrap, tbl);
+            wrap.appendChild(tbl);
+            tbl.setAttribute('contenteditable', 'true');
+        });
+    }
+
     function ensureEditableGaps() {
         convertLiteralBr(editor); // typed "<br>" -> real break
+        wrapTables(editor);       // make wide tables scrollable
         // Blok yang butuh paragraf editable setelahnya agar kursor bisa keluar & menulis di bawahnya.
         const BLOCKS = ['DETAILS', 'PRE', 'TABLE', 'UL', 'OL', 'BLOCKQUOTE', 'HR'];
+        function isBlock(el) { return el && (BLOCKS.indexOf(el.tagName) !== -1 || (el.classList && el.classList.contains('nt-table-wrap'))); }
         function newP() { const p = document.createElement('p'); p.appendChild(document.createElement('br')); return p; }
         const kids = Array.prototype.slice.call(editor.children);
         kids.forEach(function (el) {
-            if (BLOCKS.indexOf(el.tagName) !== -1) {
+            if (isBlock(el)) {
                 const next = el.nextElementSibling;
-                if (!next || BLOCKS.indexOf(next.tagName) !== -1) {
+                if (!next || isBlock(next)) {
                     editor.insertBefore(newP(), el.nextSibling);
                 }
             }
         });
         const last = editor.lastElementChild;
-        if (!last || BLOCKS.indexOf(last.tagName) !== -1) {
+        if (!last || isBlock(last)) {
             editor.appendChild(newP());
         }
     }
