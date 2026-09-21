@@ -43,6 +43,35 @@
     function escapeHtml(s) {
         return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
+    // ---- Pembantu tabel GFM ----
+    // Baris pemisah alignment, mis: | --- | :---: | ---: |  (harus mengandung '-')
+    function isDelimRow(line) {
+        if (line == null) return false;
+        const t = String(line).trim();
+        if (t.indexOf('-') === -1) return false;
+        return /^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?$/.test(t);
+    }
+    // Pisah satu baris tabel pada '|' yang TIDAK di-escape; buang pipe tepi; unescape \| -> |
+    function splitRow(line) {
+        let t = String(line).trim();
+        if (t.charAt(0) === '|') t = t.slice(1);
+        if (t.charAt(t.length - 1) === '|' && !/\\$/.test(t)) t = t.slice(0, -1);
+        // pecah pada | yang tidak didahului backslash
+        const cells = t.split(/(?<!\\)\|/);
+        return cells.map(function (c) { return c.replace(/\\\|/g, '|').trim(); });
+    }
+    // Alignment per kolom dari baris pemisah: :---: center, ---: right, :--- left, selain itu null
+    function parseAligns(delimLine) {
+        return splitRow(delimLine).map(function (c) {
+            const s = c.trim();
+            const left = s.charAt(0) === ':';
+            const right = s.charAt(s.length - 1) === ':';
+            if (left && right) return 'center';
+            if (right) return 'right';
+            if (left) return 'left';
+            return null;
+        });
+    }
     // Inline: **bold**, *italic*, `code`, ~~strike~~, [teks](url),
     // serta <span style="color/background">...</span> mentah (untuk warna) yang dipertahankan.
     function inlineMdToHtml(text) {
@@ -186,19 +215,26 @@
                 html.push('<pre>' + buf.join('\n') + '</pre>');
                 continue;
             }
-            // Tabel Markdown: baris header | ... | diikuti baris pemisah | --- | --- |
-            if (/^\s*\|.*\|\s*$/.test(line) && i + 1 < lines.length && /^\s*\|?[\s:-]*-[\s:|-]*\|?\s*$/.test(lines[i + 1]) && lines[i + 1].indexOf('-') !== -1) {
+            // Tabel Markdown (GFM). Baris berisi '|' diikuti baris pemisah alignment.
+            // Mendukung: dengan/tanpa pipe di tepi, escaped pipe (\|), dan alignment (:---, :---:, ---:).
+            if (line.indexOf('|') !== -1 && i + 1 < lines.length && isDelimRow(lines[i + 1])) {
                 closeList();
-                function cells(row) {
-                    return row.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(function (c) { return c.trim(); });
-                }
-                const header = cells(line);
+                const header = splitRow(line);
+                const aligns = parseAligns(lines[i + 1]);
                 i += 2; // lewati header + pemisah
                 const bodyRows = [];
-                while (i < lines.length && /^\s*\|.*\|\s*$/.test(lines[i])) { bodyRows.push(cells(lines[i])); i++; }
-                let th = '<table><thead><tr>' + header.map(function (h) { return '<th>' + inlineMdToHtml(h) + '</th>'; }).join('') + '</tr></thead>';
+                while (i < lines.length && lines[i].indexOf('|') !== -1 && !/^\s*$/.test(lines[i]) && !isDelimRow(lines[i])) {
+                    bodyRows.push(splitRow(lines[i])); i++;
+                }
+                const cols = header.length;
+                function alignAttr(ci) { const a = aligns[ci]; return a ? ' style="text-align:' + a + '"' : ''; }
+                let th = '<table><thead><tr>' + header.map(function (h, ci) {
+                    return '<th' + alignAttr(ci) + '>' + inlineMdToHtml(h) + '</th>';
+                }).join('') + '</tr></thead>';
                 let tb = '<tbody>' + bodyRows.map(function (r) {
-                    return '<tr>' + header.map(function (_, ci) { return '<td>' + inlineMdToHtml(r[ci] || '') + '</td>'; }).join('') + '</tr>';
+                    let row = '<tr>';
+                    for (let ci = 0; ci < cols; ci++) row += '<td' + alignAttr(ci) + '>' + inlineMdToHtml(r[ci] || '') + '</td>';
+                    return row + '</tr>';
                 }).join('') + '</tbody></table>';
                 html.push(th + tb);
                 continue;
