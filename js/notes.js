@@ -161,10 +161,13 @@
         text = text.replace(/```[\s\S]*?```/g, function (m) {
             fences.push(m); return '\u0000FENCE' + (fences.length - 1) + '\u0000';
         });
-        // Perbaiki code lama: `...` (backtick tunggal) yang membungkus teks MULTI-BARIS
-        // diubah menjadi fenced block ``` agar terender sebagai blok kode, bukan bocor.
-        text = text.replace(/`([^`]*\n[^`]*)`/g, function (_, inner) {
-            return '\n```\n' + inner.replace(/^\n+|\n+$/g, '') + '\n```\n';
+        // Perbaiki code lama: `...` (backtick tunggal) yang membungkus teks MULTI-BARIS.
+        // HANYA ubah jika seluruh span berdiri sendiri (backtick di awal baris, isi
+        // multi-baris tanpa baris kosong, backtick di akhir baris) DAN tidak ada backtick
+        // lain di dalamnya. Ini mencegah backtick antar-baris yang tidak berhubungan
+        // ter-pasang keliru sehingga menelan sebagian besar dokumen.
+        text = text.replace(/^`([^`]*\n(?:[^`\n]*\n)*?[^`\n]*)`[ \t]*$/gm, function (_, inner) {
+            return '```\n' + inner.replace(/^\n+|\n+$/g, '') + '\n```';
         });
         // Kembalikan fenced block yang dilindungi.
         text = text.replace(/\u0000FENCE(\d+)\u0000/g, function (_, i) { return fences[+i]; });
