@@ -55,8 +55,11 @@
         } catch (e) { /* abaikan */ }
     }
 
+    // Hitung berdasarkan BAGIAN (section) yang sudah selesai, bukan per pengulangan.
     function totalDone() {
-        return counts.reduce(function (s, n) { return s + n; }, 0);
+        return counts.reduce(function (s, n, i) {
+            return s + (n >= DATA[i].count ? 1 : 0);
+        }, 0);
     }
 
     function updateHeader() {
@@ -195,7 +198,7 @@
     // Muat data mode aktif lalu render ulang seluruh tampilan.
     function loadMode() {
         DATA = DATASETS[mode];
-        totalCount = DATA.reduce(function (s, x) { return s + x.count; }, 0);
+        totalCount = DATA.length; // total = jumlah bagian (section)
         load();
         render();
         updateHeader();
