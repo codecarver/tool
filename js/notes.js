@@ -275,15 +275,7 @@
                 closeList();
                 let blanks = 0;
                 while (i < lines.length && /^\s*$/.test(lines[i])) { blanks++; i++; }
-                // Setiap baris kosong di sumber = satu spacer terlihat pada render,
-                // termasuk di dalam <details> (di mana margin paragraf tidak cukup).
-                // Lewati baris kosong yang berada tepat di awal/akhir blok agar tidak
-                // menambah jarak berlebih di ujung.
-                const atStart = html.length === 0;
-                const atEnd = i >= lines.length;
-                if (!atStart && !atEnd) {
-                    for (let b = 0; b < blanks; b++) html.push('<p class="mm-spacer"><br></p>');
-                }
+                for (let b = 1; b < blanks; b++) html.push('<p class="mm-spacer"><br></p>');
                 continue;
             }
             // paragraf (gabungkan baris berturut-turut)
@@ -449,15 +441,10 @@
             });
         }
         block(root);
-        let md = out.join('\n');
-        // Rapikan run baris kosong yang TIDAK disengaja (antar blok biasa) menjadi maksimal
-        // satu baris kosong, TANPA menyentuh spacer sengaja yang ditandai \u0000BLANK\u0000.
-        md = md.replace(/\n{3,}/g, '\n\n');
-        // Setiap penanda spacer sengaja -> satu baris kosong nyata (dipertahankan).
-        // Marker berdiri sendiri di satu baris; ubah tiap marker menjadi baris kosong.
-        md = md.replace(/\n*\u0000BLANK\u0000\n*/g, function () { return '\n\n'; });
-        // Gabungkan marker beruntun: setiap marker sudah jadi '\n\n'; jangan biarkan
-        // penggabungan menghapus jumlahnya. (Pertahankan sesuai jumlah spacer.)
+        // tidy excess blank lines, then restore intentional spacer paragraphs as blank lines
+        let md = out.join('\n').replace(/\n{3,}/g, '\n\n');
+        md = md.replace(/\u0000BLANK\u0000/g, '');   // spacer marker -> just its surrounding newlines
+        md = md.replace(/\n{3,}/g, '\n\n\n');          // allow up to one intentional extra blank line
         return md.trim() + '\n';
     }
 
