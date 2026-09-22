@@ -535,6 +535,9 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
     border: 1px solid #d9efe3; border-radius: 8px; }
 .am-faedah-text { margin: 0 0 0.4rem; color: #374151; line-height: 1.6; font-size: 0.92rem; }
 .am-faedah-text:last-child { margin-bottom: 0; }
+.am-hadits-text { margin: 0 0 0.35rem; padding: 0.4rem 0.7rem; border-left: 3px solid #0b8457;
+    background: #eefaf3; color: #274b3b; line-height: 1.65; font-size: 0.92rem; border-radius: 0 6px 6px 0; }
+.am-hadits-rawi { margin: 0 0 0.4rem; color: #6b7280; font-size: 0.82rem; font-style: italic; text-align: right; }
 .am-sumber-text { margin: 0; color: #6b7280; font-size: 0.85rem; line-height: 1.55; }
 .am-sumber-label { font-weight: 600; color: #0b8457; }
 

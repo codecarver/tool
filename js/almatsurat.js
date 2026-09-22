@@ -140,6 +140,18 @@
                     f.textContent = item.faedah;
                     body.appendChild(f);
                 }
+                if (item.hadits) {
+                    const h = document.createElement('blockquote');
+                    h.className = 'am-hadits-text';
+                    h.textContent = item.hadits;
+                    body.appendChild(h);
+                    if (item.haditsRawi) {
+                        const rw = document.createElement('p');
+                        rw.className = 'am-hadits-rawi';
+                        rw.textContent = '— ' + item.haditsRawi;
+                        body.appendChild(rw);
+                    }
+                }
                 if (item.sumber) {
                     const s = document.createElement('p');
                     s.className = 'am-sumber-text';
