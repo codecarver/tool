@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Al-Ma'tsurat (Sugro) — Dzikir Pagi</title>
+    <link rel="stylesheet" href="css/app.css?v=14"/>
+</head>
+<body>
+<header class="landing-hero landing-hero-sm">
+    <nav class="landing-nav">
+        <a class="brand" href="index.html">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 21h18"/><path d="M5 21V11l4-3 4 3v10"/><path d="M13 21v-6l4-3 4 3v6"/><path d="M8 21v-4"/>
+            </svg>
+            <span>Tools</span>
+        </a>
+        <div><a class="btn btn-light" href="index.html">Home</a></div>
+    </nav>
+    <div class="hero-content">
+        <h1>Al-Ma'tsurat (Sugro)</h1>
+        <p>Dzikir pagi ringkas susunan Imam Hasan Al-Banna. Ketuk tiap dzikir untuk menghitung bacaan.</p>
+    </div>
+</header>
+
+<div class="container">
+    <div class="card">
+        <details class="tool-help">
+            <summary>Cara pakai</summary>
+            <div class="tool-help-body">
+                <ul>
+                    <li>Ketuk (tap) di mana saja pada kartu dzikir untuk menambah hitungan bacaan.</li>
+                    <li>Angka <strong>× </strong>menunjukkan jumlah anjuran membaca; penghitung <strong>0 / n</strong> mengikuti bacaanmu.</li>
+                    <li>Bila penghitung sudah penuh, ketuk sekali lagi untuk mengulang dari 0.</li>
+                    <li>Progres tersimpan otomatis di perangkat ini dan mulai dari 0 lagi setiap hari baru.</li>
+                    <li>Gunakan sakelar <strong>Latin</strong> dan <strong>Terjemahan</strong> untuk menampilkan/menyembunyikan teks.</li>
+                </ul>
+            </div>
+        </details>
+
+        <div class="am-bar-wrap">
+            <div class="am-total">
+                <span class="am-total-label">Total Bacaan</span>
+                <span class="am-total-num"><b id="am-total-done">0</b> / <span id="am-total-all">188</span></span>
+            </div>
+            <div class="am-controls">
+                <label class="am-switch"><input type="checkbox" id="am-toggle-latin" checked/> Latin</label>
+                <label class="am-switch"><input type="checkbox" id="am-toggle-trans" checked/> Terjemahan</label>
+                <button type="button" class="btn btn-light" id="am-reset">Reset</button>
+            </div>
+        </div>
+        <div class="am-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="am-progress-bar" id="am-progress-bar"></div>
+        </div>
+
+        <div class="am-list" id="am-list"></div>
+    </div>
+</div>
+
+<footer class="app-footer">
+    <span>Built with love from Darjo, kota autopilot.</span>
+</footer>
+
+<script src="js/almatsurat-data.js?v=14"></script>
+<script src="js/almatsurat.js?v=14"></script>
+</body>
+</html>

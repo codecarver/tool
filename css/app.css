@@ -465,3 +465,52 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 .mm-node, .dg-node, #dg-svg g, #mm-svg g {
     -webkit-touch-callout: none;
 }
+
+/* ===================== Al-Ma'tsurat (Sugro) ===================== */
+.am-bar-wrap { display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    flex-wrap: wrap; margin: 0.6rem 0 0.4rem; }
+.am-total { display: flex; flex-direction: column; gap: 0.1rem; }
+.am-total-label { font-size: 0.8rem; color: #6b7280; letter-spacing: 0.02em; }
+.am-total-num { font-size: 1.35rem; font-weight: 600; color: #1f6feb; }
+.am-total-num b { color: #0b8457; }
+.am-controls { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+.am-switch { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.9rem;
+    color: #374151; cursor: pointer; user-select: none; }
+
+.am-progress { height: 8px; background: #e5e9ef; border-radius: 999px; overflow: hidden; margin-bottom: 1rem; }
+.am-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #0b8457, #16a34a);
+    border-radius: 999px; transition: width 0.25s ease; }
+
+.am-list { display: flex; flex-direction: column; gap: 0.9rem; }
+.am-item { border: 1px solid #dfe3e8; border-radius: 10px; padding: 1rem 1.1rem; background: #fff;
+    cursor: pointer; transition: box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    -webkit-tap-highlight-color: transparent; }
+.am-item:hover { box-shadow: 0 2px 10px rgba(15,23,42,0.08); }
+.am-item:active { background: #f0fdf4; }
+.am-item:focus-visible { outline: 2px solid #1f6feb; outline-offset: 2px; }
+.am-item.am-complete { border-color: #0b8457; background: #f0fdf4; }
+
+.am-item-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.7rem; flex-wrap: wrap; }
+.am-rep { flex-shrink: 0; background: #eef2ff; color: #4338ca; font-weight: 700; font-size: 0.85rem;
+    padding: 0.15rem 0.5rem; border-radius: 6px; }
+.am-title { flex: 1; font-weight: 600; color: #1f2933; min-width: 0; }
+.am-counter { flex-shrink: 0; font-variant-numeric: tabular-nums; font-weight: 600; color: #6b7280;
+    background: #f3f4f6; padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.9rem; }
+.am-item.am-complete .am-counter { color: #fff; background: #0b8457; }
+
+.am-arabic { font-family: 'Traditional Arabic', 'Scheherazade New', 'Amiri', 'Times New Roman', serif;
+    font-size: 1.9rem; line-height: 2.4; text-align: right; color: #111827; margin-bottom: 0.6rem;
+    word-break: break-word; }
+.am-latin { font-style: italic; color: #2563eb; line-height: 1.6; margin-bottom: 0.5rem; }
+.am-trans { color: #4b5563; line-height: 1.65; font-size: 0.95rem; }
+
+.am-list.hide-latin .am-latin { display: none; }
+.am-list.hide-trans .am-trans { display: none; }
+
+@media (max-width: 640px) {
+    .am-item { padding: 0.85rem 0.9rem; }
+    .am-arabic { font-size: 1.6rem; line-height: 2.2; }
+    .am-total-num { font-size: 1.2rem; }
+    .am-bar-wrap { gap: 0.6rem; }
+    .am-controls { width: 100%; justify-content: space-between; }
+}
