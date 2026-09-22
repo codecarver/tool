@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Al-Ma'tsurat (Sugro) — Dzikir Pagi</title>
-    <link rel="stylesheet" href="css/app.css?v=16"/>
+    <link rel="stylesheet" href="css/app.css?v=17"/>
 </head>
 <body class="am-page">
 <header class="landing-hero landing-hero-sm">
@@ -20,13 +20,17 @@
     </nav>
     <div class="hero-content">
         <h1>Al-Ma'tsurat (Sugro)</h1>
-        <p>Dzikir pagi ringkas susunan Imam Hasan Al-Banna. Ketuk tiap dzikir untuk menghitung bacaan.</p>
+        <p>Dzikir pagi & petang ringkas susunan Imam Hasan Al-Banna. Ketuk tiap dzikir untuk menghitung bacaan.</p>
     </div>
 </header>
 
 <div class="container">
     <div class="card">
         <div class="am-sticky">
+            <div class="am-mode" role="group" aria-label="Pilih waktu dzikir">
+                <button type="button" class="am-mode-btn" data-mode="pagi" aria-pressed="true">🌅 Pagi</button>
+                <button type="button" class="am-mode-btn" data-mode="petang" aria-pressed="false">🌆 Petang</button>
+            </div>
             <details class="tool-help">
                 <summary>Cara pakai</summary>
                 <div class="tool-help-body">
@@ -64,7 +68,8 @@
     <span>Built with love from Darjo, kota autopilot.</span>
 </footer>
 
-<script src="js/almatsurat-data.js?v=16"></script>
-<script src="js/almatsurat.js?v=16"></script>
+<script src="js/almatsurat-data.js?v=17"></script>
+<script src="js/almatsurat-petang-data.js?v=17"></script>
+<script src="js/almatsurat.js?v=17"></script>
 </body>
 </html>

@@ -476,6 +476,14 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 .am-sticky { position: sticky; top: 0; z-index: 20; background: #fff;
     padding: 0.5rem 0.2rem 0.4rem; margin: -0.5rem -0.2rem 0.6rem;
     border-bottom: 1px solid #e5e9ef; box-shadow: 0 4px 10px -6px rgba(15,23,42,0.25); }
+/* Segmented toggle Pagi / Petang */
+.am-mode { display: inline-flex; background: #eef2f6; border-radius: 999px; padding: 3px;
+    gap: 2px; margin-bottom: 0.5rem; }
+.am-mode-btn { border: none; background: transparent; color: #52606d; font-weight: 600;
+    font-size: 0.9rem; padding: 0.4rem 1.1rem; border-radius: 999px; cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease; }
+.am-mode-btn:hover { color: #1f2933; }
+.am-mode-btn.active { background: #0b8457; color: #fff; box-shadow: 0 1px 3px rgba(11,132,87,0.4); }
 .am-bar-wrap { display: flex; align-items: center; justify-content: space-between; gap: 1rem;
     flex-wrap: wrap; margin: 0.6rem 0 0.4rem; }
 .am-total { display: flex; flex-direction: column; gap: 0.1rem; }

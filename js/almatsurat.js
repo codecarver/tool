@@ -1,10 +1,12 @@
-// Al-Ma'tsurat (Sugro) — Dzikir Pagi. Menampilkan daftar dzikir dengan penghitung
-// per item; ketuk item untuk menambah hitungan. Progres tersimpan di localStorage
-// dan otomatis reset di hari baru (agar mulai dari 0 tiap pagi).
+// Al-Ma'tsurat (Sugro) — Dzikir Pagi & Petang. Menampilkan daftar dzikir dengan
+// penghitung per item; ketuk item untuk menambah hitungan. Progres tersimpan di
+// localStorage (terpisah pagi/petang) dan otomatis reset di hari baru.
 (function () {
     'use strict';
-    const DATA = window.ALMATSURAT_PAGI || [];
-    const STORAGE_KEY = 'almatsurat-pagi-progress';
+    const DATASETS = {
+        pagi: window.ALMATSURAT_PAGI || [],
+        petang: window.ALMATSURAT_PETANG || []
+    };
 
     const listEl = document.getElementById('am-list');
     const totalDoneEl = document.getElementById('am-total-done');
@@ -13,11 +15,21 @@
     const resetBtn = document.getElementById('am-reset');
     const latinToggle = document.getElementById('am-toggle-latin');
     const transToggle = document.getElementById('am-toggle-trans');
+    const modeBtns = document.querySelectorAll('.am-mode-btn');
 
-    const totalCount = DATA.reduce(function (s, x) { return s + x.count; }, 0);
+    const MODE_KEY = 'almatsurat-mode';
 
-    // state: array of current counts per item (0..count)
-    let counts = DATA.map(function () { return 0; });
+    // Mode aktif: 'pagi' atau 'petang'. Default mengikuti waktu (>= 15:00 -> petang).
+    let mode = localStorage.getItem(MODE_KEY);
+    if (mode !== 'pagi' && mode !== 'petang') {
+        mode = (new Date().getHours() >= 15) ? 'petang' : 'pagi';
+    }
+
+    let DATA = DATASETS[mode];
+    let totalCount = 0;
+    let counts = [];
+
+    function storageKey() { return 'almatsurat-' + mode + '-progress'; }
 
     function todayKey() {
         const d = new Date();
@@ -25,8 +37,9 @@
     }
 
     function load() {
+        counts = DATA.map(function () { return 0; });
         try {
-            const raw = localStorage.getItem(STORAGE_KEY);
+            const raw = localStorage.getItem(storageKey());
             if (!raw) return;
             const obj = JSON.parse(raw);
             // Reset progress bila sudah beda hari.
@@ -38,7 +51,7 @@
 
     function save() {
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({ day: todayKey(), counts: counts }));
+            localStorage.setItem(storageKey(), JSON.stringify({ day: todayKey(), counts: counts }));
         } catch (e) { /* abaikan */ }
     }
 
@@ -160,11 +173,40 @@
         listEl.classList.toggle('hide-trans', !transToggle.checked);
     }
 
+    function updateModeButtons() {
+        modeBtns.forEach(function (b) {
+            b.classList.toggle('active', b.getAttribute('data-mode') === mode);
+            b.setAttribute('aria-pressed', b.getAttribute('data-mode') === mode ? 'true' : 'false');
+        });
+    }
+
+    // Muat data mode aktif lalu render ulang seluruh tampilan.
+    function loadMode() {
+        DATA = DATASETS[mode];
+        totalCount = DATA.reduce(function (s, x) { return s + x.count; }, 0);
+        load();
+        render();
+        updateHeader();
+    }
+
+    function switchMode(next) {
+        if (next === mode || !DATASETS[next] || !DATASETS[next].length) return;
+        mode = next;
+        try { localStorage.setItem(MODE_KEY, mode); } catch (e) { /* abaikan */ }
+        updateModeButtons();
+        loadMode();
+        // Gulir ke atas agar pengguna melihat perubahan dari awal.
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     // ---- init ----
-    load();
-    render();
-    updateHeader();
+    updateModeButtons();
+    loadMode();
     applyVisibility();
+
+    modeBtns.forEach(function (b) {
+        b.addEventListener('click', function () { switchMode(b.getAttribute('data-mode')); });
+    });
 
     resetBtn.addEventListener('click', function () {
         if (!confirm('Reset semua hitungan ke 0?')) return;
