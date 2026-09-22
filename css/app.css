@@ -548,3 +548,40 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
     .am-bar-wrap { gap: 0.6rem; }
     .am-controls { width: 100%; justify-content: space-between; }
 }
+
+/* ===================== Widget Waktu Sholat (melayang) ===================== */
+.pw-widget { position: fixed; right: 14px; bottom: 14px; z-index: 3000; font-size: 0.9rem; }
+.pw-main { display: inline-flex; align-items: center; gap: 0.5rem; background: #0b8457; color: #fff;
+    border: none; border-radius: 999px; padding: 0.5rem 0.9rem; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(11,132,87,0.4); font-family: inherit; }
+.pw-main:hover { background: #0a744c; }
+.pw-icon { font-size: 1.1rem; line-height: 1; }
+.pw-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
+.pw-next { font-weight: 700; }
+.pw-count { font-size: 0.78rem; opacity: 0.95; }
+
+.pw-panel { position: absolute; right: 0; bottom: calc(100% + 8px); width: 280px; max-width: 86vw;
+    background: #fff; border: 1px solid #dfe3e8; border-radius: 12px; padding: 0.8rem;
+    box-shadow: 0 10px 30px rgba(15,23,42,0.2); color: #1f2933; }
+.pw-panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+.pw-close { border: none; background: transparent; font-size: 1.3rem; line-height: 1; cursor: pointer; color: #6b7280; }
+.pw-loc { font-size: 0.82rem; color: #6b7280; margin-bottom: 0.5rem; }
+.pw-loc-name { font-weight: 600; color: #0b8457; }
+.pw-list { list-style: none; margin: 0 0 0.6rem; padding: 0; }
+.pw-row { display: flex; justify-content: space-between; padding: 0.3rem 0.5rem; border-radius: 6px;
+    font-variant-numeric: tabular-nums; }
+.pw-row + .pw-row { border-top: 1px solid #f0f3f6; }
+.pw-active { background: #eefaf3; color: #0b8457; font-weight: 700; }
+.pw-actions { display: flex; flex-direction: column; gap: 0.5rem; }
+.pw-geo { border: 1px solid #0b8457; background: #f0fdf4; color: #0b8457; border-radius: 8px;
+    padding: 0.45rem 0.6rem; cursor: pointer; font-family: inherit; font-size: 0.85rem; }
+.pw-geo:hover { background: #e3f7ec; }
+.pw-city-lbl { font-size: 0.82rem; color: #52606d; display: flex; align-items: center; gap: 0.4rem; }
+.pw-city { flex: 1; padding: 0.35rem; border: 1px solid #cbd2d9; border-radius: 6px; font-family: inherit; }
+.pw-note { font-size: 0.72rem; color: #9aa5b1; margin: 0.6rem 0 0; line-height: 1.4; }
+
+@media (max-width: 640px) {
+    .pw-widget { right: 10px; bottom: 10px; }
+    .pw-main { padding: 0.45rem 0.7rem; }
+    .pw-count { font-size: 0.72rem; }
+}
