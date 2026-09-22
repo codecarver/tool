@@ -516,6 +516,20 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 .am-list.hide-latin .am-latin { display: none; }
 .am-list.hide-trans .am-trans { display: none; }
 
+/* Faedah & Sumber (collapsible per item) */
+.am-faedah { margin-top: 0.7rem; border-top: 1px dashed #e5e9ef; padding-top: 0.5rem; cursor: default; }
+.am-faedah > summary { cursor: pointer; font-size: 0.85rem; font-weight: 600; color: #0b8457;
+    list-style: none; display: inline-flex; align-items: center; gap: 0.35rem; user-select: none; }
+.am-faedah > summary::-webkit-details-marker { display: none; }
+.am-faedah > summary::before { content: '▸'; font-size: 0.8rem; transition: transform 0.15s ease; }
+.am-faedah[open] > summary::before { transform: rotate(90deg); }
+.am-faedah-body { margin-top: 0.5rem; padding: 0.6rem 0.8rem; background: #f6fbf8;
+    border: 1px solid #d9efe3; border-radius: 8px; }
+.am-faedah-text { margin: 0 0 0.4rem; color: #374151; line-height: 1.6; font-size: 0.92rem; }
+.am-faedah-text:last-child { margin-bottom: 0; }
+.am-sumber-text { margin: 0; color: #6b7280; font-size: 0.85rem; line-height: 1.55; }
+.am-sumber-label { font-weight: 600; color: #0b8457; }
+
 @media (max-width: 640px) {
     .am-item { padding: 0.85rem 0.9rem; }
     .am-arabic { font-size: 1.6rem; line-height: 2.2; }

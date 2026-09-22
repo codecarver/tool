@@ -112,6 +112,34 @@
             card.appendChild(la);
             card.appendChild(tr);
 
+            // Faedah & Sumber (collapsible). Klik di sini TIDAK menambah hitungan.
+            if (item.faedah || item.sumber) {
+                const det = document.createElement('details');
+                det.className = 'am-faedah';
+                const sum = document.createElement('summary');
+                sum.textContent = 'Faedah & Sumber';
+                det.appendChild(sum);
+                const body = document.createElement('div');
+                body.className = 'am-faedah-body';
+                if (item.faedah) {
+                    const f = document.createElement('p');
+                    f.className = 'am-faedah-text';
+                    f.textContent = item.faedah;
+                    body.appendChild(f);
+                }
+                if (item.sumber) {
+                    const s = document.createElement('p');
+                    s.className = 'am-sumber-text';
+                    s.innerHTML = '<span class="am-sumber-label">Sumber:</span> ' + escapeHtml(item.sumber);
+                    body.appendChild(s);
+                }
+                det.appendChild(body);
+                // Cegah klik pada details memicu penghitung kartu.
+                det.addEventListener('click', function (e) { e.stopPropagation(); });
+                det.addEventListener('keydown', function (e) { e.stopPropagation(); });
+                card.appendChild(det);
+            }
+
             // Ketuk di mana saja pada kartu untuk menambah hitungan.
             card.addEventListener('click', function () { bump(idx); });
             card.addEventListener('keydown', function (e) {
