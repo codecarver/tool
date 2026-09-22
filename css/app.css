@@ -395,6 +395,8 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
     /* clip horizontally (allows vertical) so wide content can't push the page,
        without trapping the sticky Notes toolbar */
     .card { padding: 0.75rem; max-width: 100%; overflow-x: clip; }
+    /* Al-Ma'tsurat: jangan clip agar toolbar melayang (sticky) tetap bekerja di mobile. */
+    .am-page .card { overflow: visible; overflow-x: visible; }
     /* Sequence: canvas scrolls horizontally within its frame, never past the screen */
     .sq-canvas { max-width: 100%; overflow: auto; }
     .sq-canvas svg { max-width: none; }
@@ -467,6 +469,13 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 }
 
 /* ===================== Al-Ma'tsurat (Sugro) ===================== */
+/* Toolbar melayang: Cara pakai + Total Bacaan + progress bar menempel di atas saat scroll.
+   Halaman ini pakai body/window sebagai scroll container; jangan ada ancestor yang meng-clip
+   (overflow) agar position: sticky bekerja. */
+.am-page .card { overflow: visible; }
+.am-sticky { position: sticky; top: 0; z-index: 20; background: #fff;
+    padding: 0.5rem 0.2rem 0.4rem; margin: -0.5rem -0.2rem 0.6rem;
+    border-bottom: 1px solid #e5e9ef; box-shadow: 0 4px 10px -6px rgba(15,23,42,0.25); }
 .am-bar-wrap { display: flex; align-items: center; justify-content: space-between; gap: 1rem;
     flex-wrap: wrap; margin: 0.6rem 0 0.4rem; }
 .am-total { display: flex; flex-direction: column; gap: 0.1rem; }
@@ -477,7 +486,7 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 .am-switch { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.9rem;
     color: #374151; cursor: pointer; user-select: none; }
 
-.am-progress { height: 8px; background: #e5e9ef; border-radius: 999px; overflow: hidden; margin-bottom: 1rem; }
+.am-progress { height: 8px; background: #e5e9ef; border-radius: 999px; overflow: hidden; margin-bottom: 0.5rem; }
 .am-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #0b8457, #16a34a);
     border-radius: 999px; transition: width 0.25s ease; }
 
