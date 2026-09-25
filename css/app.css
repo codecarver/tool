@@ -151,6 +151,12 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 /* Titik penanda node punya deskripsi */
 .mm-desc-dot { width: 8px; height: 8px; border-radius: 50%; background: #1f6feb;
     display: inline-block; flex: 0 0 auto; }
+/* Indikator progres anak yang sudah "done" pada node induk */
+.mm-progress { display: inline-flex; align-items: center; justify-content: center; height: 18px;
+    padding: 0 6px; border-radius: 9px; background: #e6f4ea; color: #1a7f37;
+    font-size: 0.7rem; font-weight: 700; border: 1px solid #b7dfc2; flex: 0 0 auto;
+    font-variant-numeric: tabular-nums; }
+.mm-progress.complete { background: #1a7f37; color: #fff; border-color: #1a7f37; }
 /* Tombol tandai selesai + gaya node selesai */
 .mm-act.mm-done { background: #e6f4ea; color: #1a7f37; font-weight: bold; }
 .mm-act.mm-done.is-done { background: #1a7f37; color: #fff; }
