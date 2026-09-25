@@ -317,30 +317,26 @@
         });
         el.appendChild(label);
 
-        // Badge jumlah anak — sekaligus tombol ciutkan/perluas (klik). Menandai node yang diciutkan.
+        // Satu badge saja: tombol ciutkan/perluas + indikator progres.
+        // - Tanpa anak yang done: tampilkan jumlah total anak (mis. "5").
+        // - Bila ada anak yang done: tampilkan "done/total" (mis. "1/5", "5/5").
         if (node.children.length > 0) {
+            const total = node.children.length;
+            const doneCount = node.children.filter(function (c) { return c.done; }).length;
+            const allDone = doneCount > 0 && doneCount === total;
             const count = document.createElement('span');
-            count.className = 'mm-count' + (node.collapsed ? ' collapsed' : '');
-            count.textContent = node.collapsed ? ('+' + node.children.length) : node.children.length;
-            count.title = node.children.length + ' children — click to ' + (node.collapsed ? 'expand' : 'collapse');
+            count.className = 'mm-count'
+                + (node.collapsed ? ' collapsed' : '')
+                + (doneCount > 0 ? ' has-done' : '')
+                + (allDone ? ' complete' : '');
+            let label = doneCount > 0 ? (doneCount + '/' + total) : String(total);
+            count.textContent = node.collapsed ? ('+' + label) : label;
+            count.title = (doneCount > 0 ? (doneCount + ' of ' + total + ' children done — ') : (total + ' children — '))
+                + 'click to ' + (node.collapsed ? 'expand' : 'collapse');
             count.addEventListener('click', function (e) {
                 e.stopPropagation(); node.collapsed = !node.collapsed; render();
             });
             el.appendChild(count);
-        }
-
-        // Indikator progres "done" pada induk: jumlah anak langsung yang sudah done / total.
-        // HANYA muncul bila minimal satu anak langsung telah ditandai done.
-        if (node.children.length > 0) {
-            const doneCount = node.children.filter(function (c) { return c.done; }).length;
-            if (doneCount > 0) {
-                const prog = document.createElement('span');
-                const allDone = doneCount === node.children.length;
-                prog.className = 'mm-progress' + (allDone ? ' complete' : '');
-                prog.textContent = '✓ ' + doneCount + '/' + node.children.length;
-                prog.title = doneCount + ' of ' + node.children.length + ' children marked done';
-                el.appendChild(prog);
-            }
         }
 
         // Indikator kecil bila node punya deskripsi (titik biru), tanpa tombol.
@@ -735,34 +731,37 @@
             ctx.textAlign = 'left';
             ctx.restore();
 
-            // Badge progres "done" anak (hanya bila minimal satu anak done) — di pojok kanan-atas node.
+            // Satu badge (jumlah anak / progres done) di pojok kanan-atas node.
             if (node.children.length > 0) {
+                const total = node.children.length;
                 const dc = node.children.filter(function (c) { return c.done; }).length;
-                if (dc > 0) {
-                    const allDone = dc === node.children.length;
-                    const txt = '\u2713 ' + dc + '/' + node.children.length;
-                    ctx.save();
-                    ctx.font = 'bold 11px system-ui, sans-serif';
-                    const tw = ctx.measureText(txt).width;
-                    const bw = tw + 12, bh = 18;
-                    const bx = g.x + g.w - bw / 2, by = g.y - bh / 2; // tumpang di sudut kanan-atas
-                    ctx.beginPath();
-                    const rr = bh / 2;
-                    ctx.moveTo(bx + rr, by);
-                    ctx.arcTo(bx + bw, by, bx + bw, by + bh, rr);
-                    ctx.arcTo(bx + bw, by + bh, bx, by + bh, rr);
-                    ctx.arcTo(bx, by + bh, bx, by, rr);
-                    ctx.arcTo(bx, by, bx + bw, by, rr);
-                    ctx.closePath();
-                    ctx.fillStyle = allDone ? '#1a7f37' : '#e6f4ea';
-                    ctx.fill();
-                    ctx.strokeStyle = allDone ? '#1a7f37' : '#b7dfc2';
-                    ctx.lineWidth = 1; ctx.stroke();
-                    ctx.fillStyle = allDone ? '#ffffff' : '#1a7f37';
-                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                    ctx.fillText(txt, bx + bw / 2, by + bh / 2 + 0.5);
-                    ctx.restore();
-                }
+                const allDone = dc > 0 && dc === total;
+                let label = dc > 0 ? (dc + '/' + total) : String(total);
+                if (node.collapsed) label = '+' + label;
+                ctx.save();
+                ctx.font = 'bold 11px system-ui, sans-serif';
+                const tw = ctx.measureText(label).width;
+                const bw = Math.max(18, tw + 12), bh = 18;
+                const bx = g.x + g.w - bw / 2, by = g.y - bh / 2; // tumpang di sudut kanan-atas
+                ctx.beginPath();
+                const rr = bh / 2;
+                ctx.moveTo(bx + rr, by);
+                ctx.arcTo(bx + bw, by, bx + bw, by + bh, rr);
+                ctx.arcTo(bx + bw, by + bh, bx, by + bh, rr);
+                ctx.arcTo(bx, by + bh, bx, by, rr);
+                ctx.arcTo(bx, by, bx + bw, by, rr);
+                ctx.closePath();
+                // Warna: default abu; ada done -> hijau muda; semua done -> hijau solid; collapsed -> biru
+                let fill = '#eef2f6', stroke = '#d3dce6', fg = '#52606d';
+                if (node.collapsed) { fill = '#1f6feb'; stroke = '#1f6feb'; fg = '#ffffff'; }
+                else if (allDone) { fill = '#1a7f37'; stroke = '#1a7f37'; fg = '#ffffff'; }
+                else if (dc > 0) { fill = '#e6f4ea'; stroke = '#b7dfc2'; fg = '#1a7f37'; }
+                ctx.fillStyle = fill; ctx.fill();
+                ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke();
+                ctx.fillStyle = fg;
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(label, bx + bw / 2, by + bh / 2 + 0.5);
+                ctx.restore();
             }
 
             if (!node.collapsed) node.children.forEach(function (c) { drawNodes(c); });

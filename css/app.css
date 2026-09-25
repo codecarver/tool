@@ -148,15 +148,15 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
     font-size: 0.72rem; font-weight: 700; border: 1px solid #d3dce6; cursor: pointer; }
 .mm-count:hover { background: #d6e4ff; color: #1f6feb; border-color: #1f6feb; }
 .mm-count.collapsed { background: #1f6feb; color: #fff; border-color: #1f6feb; }
+/* Badge yang sama juga menampilkan progres "done" anak: hijau bila ada yang done, solid bila semua done */
+.mm-count.has-done { background: #e6f4ea; color: #1a7f37; border-color: #b7dfc2; }
+.mm-count.has-done:hover { background: #d3ecda; }
+.mm-count.complete { background: #1a7f37; color: #fff; border-color: #1a7f37; }
+.mm-count.complete:hover { background: #166b2e; }
 /* Titik penanda node punya deskripsi */
 .mm-desc-dot { width: 8px; height: 8px; border-radius: 50%; background: #1f6feb;
     display: inline-block; flex: 0 0 auto; }
-/* Indikator progres anak yang sudah "done" pada node induk */
-.mm-progress { display: inline-flex; align-items: center; justify-content: center; height: 18px;
-    padding: 0 6px; border-radius: 9px; background: #e6f4ea; color: #1a7f37;
-    font-size: 0.7rem; font-weight: 700; border: 1px solid #b7dfc2; flex: 0 0 auto;
-    font-variant-numeric: tabular-nums; }
-.mm-progress.complete { background: #1a7f37; color: #fff; border-color: #1a7f37; }
+
 /* Tombol tandai selesai + gaya node selesai */
 .mm-act.mm-done { background: #e6f4ea; color: #1a7f37; font-weight: bold; }
 .mm-act.mm-done.is-done { background: #1a7f37; color: #fff; }
