@@ -183,11 +183,14 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 .tool-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.12); transform: translateY(-2px); }
 
 /* ===== Sequence diagram ===== */
-.sq-layout { display: flex; gap: 1rem; flex-wrap: wrap; min-width: 0; }
-.sq-input { flex: 1 1 260px; min-width: 0; min-height: 380px; font-family: ui-monospace, Menlo, Consolas, monospace;
-    font-size: 0.9rem; padding: 0.6rem; border: 1px solid #cbd2d9; border-radius: 8px; resize: vertical; }
-.sq-canvas { flex: 2 1 400px; min-width: 0; overflow: auto; border: 1px solid #cbd2d9; border-radius: 8px;
-    background: #fbfdff; min-height: 380px; }
+/* Tinggi tetap untuk area teks & diagram supaya konten panjang di-scroll DI DALAM frame
+   (bukan mendorong seluruh halaman). */
+.sq-layout { display: flex; gap: 1rem; flex-wrap: wrap; min-width: 0; align-items: stretch; }
+.sq-input { flex: 1 1 260px; min-width: 0; height: 600px; font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 0.9rem; padding: 0.6rem; border: 1px solid #cbd2d9; border-radius: 8px; resize: vertical;
+    overflow: auto; }
+.sq-canvas { flex: 2 1 400px; min-width: 0; height: 600px; overflow: auto; border: 1px solid #cbd2d9; border-radius: 8px;
+    background: #fbfdff; }
 
 /* ===== Diagram + file-explorer layout (flow, free, sequence) ===== */
 .dg-wrap, .sq-wrap { display: flex; gap: 1rem; align-items: stretch; position: relative; }
@@ -458,10 +461,10 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 
 
 
-    /* Sequence diagram: stack text input above the rendered canvas */
+    /* Sequence diagram: stack text input above the rendered canvas; each scrolls internally */
     .sq-layout { flex-direction: column; }
-    .sq-input { min-height: 180px; }
-    .sq-canvas { min-height: 300px; }
+    .sq-input { height: 220px; }
+    .sq-canvas { height: 60vh; min-height: 300px; }
 
     /* Mind map modal fits small screens */
     .mm-modal { width: calc(100vw - 24px); max-height: 85vh; }
