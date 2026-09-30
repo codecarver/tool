@@ -338,7 +338,13 @@ window.createDiagram = function (opts) {
 
     // Bangun path "siku" (orthogonal step) antara dua node.
     // Bila ada waypoint (via), belokan melewati titik itu; jika tidak, belok di tengah.
-    function elbowPath(ga, gb, via) {
+    // `edir` = arah panah; ujung yang berpanah dimundurkan GAP px agar kepala panah tidak
+    // tertutup kotak node (node digambar di atas layer SVG garis).
+    function elbowPath(ga, gb, via, edir) {
+        const GAP = 9;
+        edir = edir || 'forward';
+        const arrowAtT = (edir === 'forward' || edir === 'both');
+        const arrowAtS = (edir === 'backward' || edir === 'both');
         // titik keluar/masuk di sisi node, arah horizontal atau vertikal dominan
         const dxc = gb.cx - ga.cx, dyc = gb.cy - ga.cy;
         const horizontal = Math.abs(dxc) >= Math.abs(dyc);
@@ -347,6 +353,9 @@ window.createDiagram = function (opts) {
             const dir = dxc >= 0 ? 1 : -1;
             s = { x: ga.cx + dir * ga.w / 2, y: ga.cy };
             t = { x: gb.cx - dir * gb.w / 2, y: gb.cy };
+            // segmen akhir/awal horizontal: mundurkan sepanjang x menjauh dari node.
+            if (arrowAtT) t.x -= dir * GAP;
+            if (arrowAtS) s.x += dir * GAP;
             midX = via ? via.x : (s.x + t.x) / 2;
             d = 'M ' + s.x + ' ' + s.y + ' L ' + midX + ' ' + s.y +
                 ' L ' + midX + ' ' + t.y + ' L ' + t.x + ' ' + t.y;
@@ -354,6 +363,9 @@ window.createDiagram = function (opts) {
             const dir = dyc >= 0 ? 1 : -1;
             s = { x: ga.cx, y: ga.cy + dir * ga.h / 2 };
             t = { x: gb.cx, y: gb.cy - dir * gb.h / 2 };
+            // segmen akhir/awal vertikal: mundurkan sepanjang y menjauh dari node.
+            if (arrowAtT) t.y -= dir * GAP;
+            if (arrowAtS) s.y += dir * GAP;
             midY = via ? via.y : (s.y + t.y) / 2;
             d = 'M ' + s.x + ' ' + s.y + ' L ' + s.x + ' ' + midY +
                 ' L ' + t.x + ' ' + midY + ' L ' + t.x + ' ' + t.y;
@@ -372,7 +384,7 @@ window.createDiagram = function (opts) {
 
         let s, t, d;
         if (elbow) {
-            const ep = elbowPath(ga, gb, via);
+            const ep = elbowPath(ga, gb, via, e.dir || 'forward');
             s = ep.s; t = ep.t; d = ep.d;
         } else {
             // Titik ujung dihitung mengarah ke titik berikutnya (via bila ada, jika tidak ke pusat lawan).
@@ -775,7 +787,7 @@ window.createDiagram = function (opts) {
             ctx.strokeStyle = '#3e4c59';
             ctx.setLineDash(e.dashed ? [7, 5] : []);
             if (elbow) {
-                const ep = elbowPath(ga, gb, via);
+                const ep = elbowPath(ga, gb, via, e.dir || 'forward');
                 s = ep.s; t = ep.t; mid = ep.mid;
                 // gambar path siku dari string d: parse titik-titiknya
                 const pts = ep.d.match(/-?\d+(\.\d+)?/g).map(Number);
