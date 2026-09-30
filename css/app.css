@@ -273,11 +273,7 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 /* Saat menggeser panel dengan Ctrl+seret */
 .mm-canvas.dg-panning, .mm-canvas.dg-panning * { cursor: grabbing !important; }
 /* Untuk flow/free diagram, grup garis (edge) harus bisa diklik/hover, meski .mm-svg secara umum pointer-events:none */
-/* Layer garis (SVG) diletakkan DI ATAS node agar kepala panah TIDAK PERNAH tertutup kotak node
-   (termasuk kotak besar). #dg-svg sendiri pointer-events:none sehingga node di bawahnya tetap
-   bisa di-drag; hanya grup garis (<g>) yang menangkap klik/hover. */
-#dg-nodes { position: relative; z-index: 1; }
-#dg-svg { pointer-events: none; position: relative; z-index: 2; }
+#dg-svg { pointer-events: none; }
 #dg-svg g { pointer-events: all; }
 /* Saat mode hubungkan, matikan interaksi garis agar klik jatuh ke node tujuan */
 .mm-canvas.dg-linking #dg-svg g { pointer-events: none; }

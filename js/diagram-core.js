@@ -341,7 +341,7 @@ window.createDiagram = function (opts) {
     // `edir` = arah panah; ujung yang berpanah dimundurkan GAP px agar kepala panah tidak
     // tertutup kotak node (node digambar di atas layer SVG garis).
     function elbowPath(ga, gb, via, edir) {
-        const GAP = 2;
+        const GAP = 20;
         edir = edir || 'forward';
         const arrowAtT = (edir === 'forward' || edir === 'both');
         const arrowAtS = (edir === 'backward' || edir === 'both');
@@ -392,7 +392,7 @@ window.createDiagram = function (opts) {
             t = edgePoint(gb, via ? via.x : ga.cx, via ? via.y : ga.cy);
             // Mundurkan ujung yang berpanah keluar node, LEBIH panjang dari kepala panah
             // (markerWidth 10 × strokeWidth 2 ≈ 16px) agar kepala panah tidak tertutup kotak node.
-            const GAP = 2;
+            const GAP = 20;
             const edirGap = e.dir || 'forward';
             if (edirGap === 'forward' || edirGap === 'both') t = pullBack(t, via ? via : s, GAP);
             if (edirGap === 'backward' || edirGap === 'both') s = pullBack(s, via ? via : t, GAP);
@@ -800,7 +800,7 @@ window.createDiagram = function (opts) {
             } else {
                 s = edgePoint(ga, via ? via.x : gb.cx, via ? via.y : gb.cy);
                 t = edgePoint(gb, via ? via.x : ga.cx, via ? via.y : ga.cy);
-                const GAP = 2;
+                const GAP = 20;
                 const ed = e.dir || 'forward';
                 if (ed === 'forward' || ed === 'both') t = pullBack(t, via ? via : s, GAP);
                 if (ed === 'backward' || ed === 'both') s = pullBack(s, via ? via : t, GAP);
