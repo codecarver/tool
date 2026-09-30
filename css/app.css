@@ -591,3 +591,19 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
     .pw-main { padding: 0.45rem 0.7rem; }
     .pw-count { font-size: 0.72rem; }
 }
+
+/* ===================== Slash "/" command menu (Notes) ===================== */
+.nt-slash-menu { position: fixed; z-index: 4000; width: 240px; max-height: 320px; overflow-y: auto;
+    background: #fff; border: 1px solid #cbd2d9; border-radius: 10px; box-shadow: 0 8px 28px rgba(15,23,42,0.2);
+    padding: 4px; }
+.nt-slash-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 0.55rem; border-radius: 7px;
+    cursor: pointer; }
+.nt-slash-item.active, .nt-slash-item:hover { background: #eef3ff; }
+.nt-slash-ico { flex: 0 0 auto; width: 28px; height: 28px; display: inline-flex; align-items: center;
+    justify-content: center; background: #f0f3f6; border-radius: 6px; font-size: 0.85rem; font-weight: 700;
+    color: #3e4c59; }
+.nt-slash-item.active .nt-slash-ico { background: #d6e4ff; color: #1f6feb; }
+.nt-slash-txt { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+.nt-slash-lbl { font-size: 0.9rem; font-weight: 600; color: #1f2933; }
+.nt-slash-hint { font-size: 0.75rem; color: #8a94a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nt-slash-empty { padding: 0.6rem 0.7rem; color: #8a94a6; font-size: 0.85rem; }

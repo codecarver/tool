@@ -894,7 +894,12 @@
 
     document.querySelectorAll('#nt-toolbar button[data-act]').forEach(function (b) {
         b.addEventListener('click', function () {
-            const act = b.getAttribute('data-act');
+            runAction(b.getAttribute('data-act'));
+        });
+    });
+
+    // Jalankan aksi toolbar berdasarkan nama (dipakai toolbar & menu "/" slash command).
+    function runAction(act) {
             if (act === 'link') { const url = prompt('Link URL:', 'https://'); if (url) exec('createLink', url); }
             else if (act === 'hr') { exec('insertHorizontalRule'); }
             else if (act === 'details') {
@@ -985,7 +990,7 @@
                 editor.focus();
             }
             markDirty();
-        });
+    }
 
     // Sisipkan blok kode <pre> tingkat atas + paragraf kosong setelahnya, kursor di dalam <pre>.
     function insertCodeBlock(text) {
@@ -1005,7 +1010,7 @@
         r.selectNodeContents(pre); r.collapse(true);
         const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
     }
-    });
+
     blockSel.addEventListener('change', function () {
         const v = blockSel.value;
         exec('formatBlock', v === 'p' ? 'P' : v.toUpperCase());
@@ -1137,8 +1142,191 @@
         setTimeout(function () { win.print(); }, 300);
     }
 
+    // ===================== Slash "/" command menu =====================
+    // Ketik "/" untuk memunculkan menu berisi aksi yang sama dengan toolbar.
+    // Ketik untuk memfilter, ↑/↓ untuk navigasi, Enter/klik untuk memilih, Esc menutup.
+    (function slashCommandMenu() {
+        const COMMANDS = [
+            { label: 'Heading 1', hint: 'Judul besar', icon: 'H1', run: function () { exec('formatBlock', 'H1'); } },
+            { label: 'Heading 2', hint: 'Sub judul', icon: 'H2', run: function () { exec('formatBlock', 'H2'); } },
+            { label: 'Heading 3', hint: 'Sub-sub judul', icon: 'H3', run: function () { exec('formatBlock', 'H3'); } },
+            { label: 'Normal text', hint: 'Paragraf biasa', icon: '¶', run: function () { exec('formatBlock', 'P'); } },
+            { label: 'Bulleted list', hint: 'Daftar butir', icon: '•', run: function () { exec('insertUnorderedList'); } },
+            { label: 'Numbered list', hint: 'Daftar bernomor', icon: '1.', run: function () { exec('insertOrderedList'); } },
+            { label: 'Quote', hint: 'Kutipan', icon: '❝', run: function () { exec('formatBlock', 'BLOCKQUOTE'); } },
+            { label: 'Divider', hint: 'Garis pemisah', icon: '―', run: function () { runAction('hr'); } },
+            { label: 'Inline code', hint: 'Kode sebaris', icon: '</>', run: function () { runAction('code'); } },
+            { label: 'Code block', hint: 'Blok kode', icon: '▤', run: function () { runAction('codeblock'); } },
+            { label: 'Table', hint: 'Sisipkan tabel', icon: '▦', run: function () { runAction('table'); } },
+            { label: 'Collapsible', hint: 'Bagian yang bisa dilipat', icon: '▸', run: function () { runAction('details'); } },
+            { label: 'Link', hint: 'Sisipkan tautan', icon: '🔗', run: function () { runAction('link'); } },
+            { label: 'Bold', hint: 'Tebal', icon: 'B', run: function () { exec('bold'); } },
+            { label: 'Italic', hint: 'Miring', icon: 'I', run: function () { exec('italic'); } },
+            { label: 'Strikethrough', hint: 'Coret', icon: 'S', run: function () { exec('strikeThrough'); } },
+            { label: 'Date & time', hint: 'Sisipkan tanggal/waktu', icon: '📅', run: function () {
+                const d = new Date();
+                const s = d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+                document.execCommand('insertText', false, s);
+            } }
+        ];
+
+        const menu = document.createElement('div');
+        menu.className = 'nt-slash-menu';
+        menu.style.display = 'none';
+        document.body.appendChild(menu);
+
+        let open = false;
+        let filter = '';
+        let slashRange = null; // posisi tepat setelah "/" saat menu dibuka
+        let items = [];
+        let activeIdx = 0;
+
+        function currentTextBeforeCaret() {
+            const sel = window.getSelection();
+            if (!sel || !sel.rangeCount) return null;
+            return sel.getRangeAt(0);
+        }
+
+        function openMenu() {
+            const sel = window.getSelection();
+            if (!sel || !sel.rangeCount) return;
+            slashRange = sel.getRangeAt(0).cloneRange();
+            open = true; filter = ''; activeIdx = 0;
+            renderItems();
+            positionMenu();
+            menu.style.display = 'block';
+        }
+
+        function closeMenu() {
+            open = false; menu.style.display = 'none'; slashRange = null;
+        }
+
+        function positionMenu() {
+            const sel = window.getSelection();
+            let rect = null;
+            if (sel && sel.rangeCount) {
+                const r = sel.getRangeAt(0).cloneRange();
+                r.collapse(true);
+                const rects = r.getClientRects();
+                if (rects.length) rect = rects[0];
+                if (!rect) { const rr = r.getBoundingClientRect(); if (rr.width || rr.height) rect = rr; }
+            }
+            if (!rect) { const er = editor.getBoundingClientRect(); rect = { left: er.left + 20, bottom: er.top + 40 }; }
+            const mw = 240, mh = Math.min(320, items.length * 44 + 8);
+            let left = rect.left;
+            let top = rect.bottom + 4;
+            if (left + mw > window.innerWidth - 8) left = window.innerWidth - mw - 8;
+            if (top + mh > window.innerHeight - 8) top = rect.top - mh - 4;
+            menu.style.left = Math.max(8, left) + 'px';
+            menu.style.top = Math.max(8, top) + 'px';
+        }
+
+        function renderItems() {
+            const f = filter.toLowerCase();
+            items = COMMANDS.filter(function (c) {
+                return !f || c.label.toLowerCase().indexOf(f) !== -1 || (c.hint && c.hint.toLowerCase().indexOf(f) !== -1);
+            });
+            if (activeIdx >= items.length) activeIdx = Math.max(0, items.length - 1);
+            menu.innerHTML = '';
+            if (!items.length) {
+                const empty = document.createElement('div');
+                empty.className = 'nt-slash-empty';
+                empty.textContent = 'No matching command';
+                menu.appendChild(empty);
+                return;
+            }
+            items.forEach(function (c, i) {
+                const row = document.createElement('div');
+                row.className = 'nt-slash-item' + (i === activeIdx ? ' active' : '');
+                row.innerHTML = '<span class="nt-slash-ico">' + escapeHtml(c.icon) + '</span>' +
+                    '<span class="nt-slash-txt"><span class="nt-slash-lbl">' + escapeHtml(c.label) + '</span>' +
+                    '<span class="nt-slash-hint">' + escapeHtml(c.hint || '') + '</span></span>';
+                row.addEventListener('mousedown', function (e) { e.preventDefault(); choose(i); });
+                row.addEventListener('mousemove', function () { if (activeIdx !== i) { activeIdx = i; highlight(); } });
+                menu.appendChild(row);
+            });
+        }
+
+        function highlight() {
+            Array.prototype.forEach.call(menu.children, function (ch, i) {
+                ch.classList.toggle('active', i === activeIdx);
+            });
+        }
+
+        // Hapus teks "/filter" yang sudah diketik, lalu jalankan perintah.
+        function choose(i) {
+            const cmd = items[i];
+            if (!cmd) { closeMenu(); return; }
+            removeSlashText();
+            closeMenu();
+            editor.focus();
+            cmd.run();
+            markDirty();
+        }
+
+        // Hapus karakter "/" + kata filter sebelum kursor.
+        function removeSlashText() {
+            const sel = window.getSelection();
+            if (!sel || !sel.rangeCount) return;
+            const range = sel.getRangeAt(0);
+            const node = range.startContainer;
+            if (node.nodeType === 3) {
+                const offset = range.startOffset;
+                const text = node.textContent;
+                // cari "/" terdekat sebelum kursor
+                const slashPos = text.lastIndexOf('/', offset - 1);
+                if (slashPos !== -1) {
+                    const del = document.createRange();
+                    del.setStart(node, slashPos);
+                    del.setEnd(node, offset);
+                    del.deleteContents();
+                    const r2 = document.createRange();
+                    r2.setStart(node, slashPos); r2.collapse(true);
+                    sel.removeAllRanges(); sel.addRange(r2);
+                }
+            }
+        }
+
+        // Buka menu saat "/" diketik di awal baris/kata (bukan di dalam kata).
+        editor.addEventListener('keydown', function (e) {
+            if (open) {
+                if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(items.length - 1, activeIdx + 1); highlight(); return; }
+                if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(0, activeIdx - 1); highlight(); return; }
+                if (e.key === 'Enter') { e.preventDefault(); choose(activeIdx); return; }
+                if (e.key === 'Escape') { e.preventDefault(); closeMenu(); return; }
+                if (e.key === 'Backspace') {
+                    // bila filter kosong dan menekan backspace, tutup menu (menghapus "/")
+                    if (filter === '') { closeMenu(); return; }
+                    filter = filter.slice(0, -1); setTimeout(function () { renderItems(); highlight(); }, 0); return;
+                }
+                if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                    filter += e.key; setTimeout(function () { renderItems(); positionMenu(); highlight(); }, 0);
+                    return;
+                }
+                return;
+            }
+            if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey && !rawMode) {
+                // Pastikan tidak sedang di dalam <pre> (blok kode) — biarkan "/" biasa.
+                const sel = window.getSelection();
+                if (sel && sel.rangeCount) {
+                    let n = sel.getRangeAt(0).startContainer;
+                    while (n && n !== editor && !(n.nodeType === 1 && n.tagName === 'PRE')) n = n.parentNode;
+                    if (n && n.tagName === 'PRE') return; // di dalam code block -> "/" literal
+                }
+                // buka setelah karakter "/" tersisip (biar posisi caret pas)
+                setTimeout(openMenu, 0);
+            }
+        });
+
+        // Tutup bila klik di luar menu atau berpindah fokus.
+        document.addEventListener('mousedown', function (e) {
+            if (open && !menu.contains(e.target)) closeMenu();
+        });
+        editor.addEventListener('blur', function () { setTimeout(function () { if (open) closeMenu(); }, 150); });
+    })();
+
     // Initial sample content
-    editor.innerHTML = mdToHtml('# Welcome\n\nA WYSIWYG **Markdown** editor. Open a folder on the left to start.\n\n- Click *Open Folder*\n- Pick a `.md` file\n- Type, and **auto-save** will write it back to the file');
+    editor.innerHTML = mdToHtml('# Welcome\n\nA WYSIWYG **Markdown** editor. Open a folder on the left to start. Type **/** for quick commands.\n\n- Click *Open Folder*\n- Pick a `.md` file\n- Type, and **auto-save** will write it back to the file');
     ensureEditableGaps();
 
     // Mobile keyboard fallback: keep the toolbar pinned to the top of the VISIBLE area
