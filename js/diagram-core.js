@@ -13,6 +13,18 @@ window.createDiagram = function (opts) {
     const nodesLayer = document.getElementById(opts.nodesId);
     const stage = document.getElementById(opts.stageId);
 
+    // Overlay khusus KEPALA PANAH, diletakkan DI ATAS node (setelah nodesLayer di DOM) dengan
+    // pointer-events:none sehingga tidak pernah mengganggu interaksi node, tapi kepala panah
+    // selalu terlihat walau ujung garis menempel di kotak besar.
+    const arrowSVGNS = 'http://www.w3.org/2000/svg';
+    const arrowLayer = document.createElementNS(arrowSVGNS, 'svg');
+    arrowLayer.setAttribute('class', 'dg-arrow-layer');
+    arrowLayer.style.position = 'absolute';
+    arrowLayer.style.top = '0'; arrowLayer.style.left = '0';
+    arrowLayer.style.pointerEvents = 'none';
+    arrowLayer.style.overflow = 'visible';
+    stage.appendChild(arrowLayer); // setelah nodesLayer -> di atas node
+
     let model = { nodes: [], edges: [] };
     let zoom = 1;
     let connectFrom = null; // id node sumber saat mode hubungkan
@@ -74,6 +86,7 @@ window.createDiagram = function (opts) {
         nodesLayer.innerHTML = '';
         for (const k in elById) delete elById[k];
         while (svg.firstChild) svg.removeChild(svg.firstChild);
+        while (arrowLayer.firstChild) arrowLayer.removeChild(arrowLayer.firstChild);
 
         // defs arrow
         const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
@@ -117,13 +130,27 @@ window.createDiagram = function (opts) {
         const s = 1 / Math.max(Math.abs(dx) / (g.w / 2), Math.abs(dy) / (g.h / 2));
         return { x: g.cx + dx * s, y: g.cy + dy * s };
     }
-    // Geser titik `p` sejauh `dist` px menjauh dari node (ke arah `toward`), agar kepala
-    // panah tidak tertutup kotak node.
+    // Geser titik `p` sejauh `dist` px menjauh dari node (ke arah `toward`).
     function pullBack(p, toward, dist) {
         const dx = toward.x - p.x, dy = toward.y - p.y;
         const len = Math.hypot(dx, dy);
         if (len < 0.001) return p;
         return { x: p.x + (dx / len) * dist, y: p.y + (dy / len) * dist };
+    }
+    // Gambar kepala panah (segitiga terisi) di overlay ATAS node, dengan ujung di `tip`
+    // dan mengarah sesuai `angle` (rad). Selalu terlihat karena overlay di atas node.
+    function drawArrowHead(tip, angle) {
+        const L = 12, W = 6; // panjang & setengah-lebar kepala panah
+        const bx = tip.x - L * Math.cos(angle);
+        const by = tip.y - L * Math.sin(angle);
+        const nx = Math.sin(angle), ny = -Math.cos(angle); // normal
+        const p1 = { x: bx + W * nx, y: by + W * ny };
+        const p2 = { x: bx - W * nx, y: by - W * ny };
+        const tri = document.createElementNS(arrowSVGNS, 'polygon');
+        tri.setAttribute('points',
+            tip.x + ',' + tip.y + ' ' + p1.x + ',' + p1.y + ' ' + p2.x + ',' + p2.y);
+        tri.setAttribute('fill', '#3e4c59');
+        arrowLayer.appendChild(tri);
     }
     // Pecah teks menjadi baris agar muat dalam lebar maxW (word-wrap), menghormati \n eksplisit.
     function wrapText(ctx, text, maxW) {
@@ -336,41 +363,37 @@ window.createDiagram = function (opts) {
         setTimeout(function () { document.addEventListener('click', outsideClose); }, 0);
     }
 
-    // Bangun path "siku" (orthogonal step) antara dua node.
-    // Bila ada waypoint (via), belokan melewati titik itu; jika tidak, belok di tengah.
-    // `edir` = arah panah; ujung yang berpanah dimundurkan GAP px agar kepala panah tidak
-    // tertutup kotak node (node digambar di atas layer SVG garis).
+    // Bangun path "siku" (orthogonal step) antara dua node. Ujung PAS di tepi node;
+    // kepala panah digambar di overlay atas sehingga tidak perlu dimundurkan.
+    // Mengembalikan juga sudut datang di t (tAngle) dan di s (sAngle) untuk kepala panah.
     function elbowPath(ga, gb, via, edir) {
-        const GAP = 20;
         edir = edir || 'forward';
-        const arrowAtT = (edir === 'forward' || edir === 'both');
-        const arrowAtS = (edir === 'backward' || edir === 'both');
         // titik keluar/masuk di sisi node, arah horizontal atau vertikal dominan
         const dxc = gb.cx - ga.cx, dyc = gb.cy - ga.cy;
         const horizontal = Math.abs(dxc) >= Math.abs(dyc);
-        let s, t, midX, midY, d;
+        let s, t, midX, midY, d, tAngle, sAngle;
         if (horizontal) {
             const dir = dxc >= 0 ? 1 : -1;
             s = { x: ga.cx + dir * ga.w / 2, y: ga.cy };
             t = { x: gb.cx - dir * gb.w / 2, y: gb.cy };
-            // segmen akhir/awal horizontal: mundurkan sepanjang x menjauh dari node.
-            if (arrowAtT) t.x -= dir * GAP;
-            if (arrowAtS) s.x += dir * GAP;
             midX = via ? via.x : (s.x + t.x) / 2;
             d = 'M ' + s.x + ' ' + s.y + ' L ' + midX + ' ' + s.y +
                 ' L ' + midX + ' ' + t.y + ' L ' + t.x + ' ' + t.y;
+            // segmen akhir menuju t horizontal (arah dir); segmen awal keluar s horizontal.
+            tAngle = dir > 0 ? 0 : Math.PI;
+            sAngle = dir > 0 ? Math.PI : 0;
         } else {
             const dir = dyc >= 0 ? 1 : -1;
             s = { x: ga.cx, y: ga.cy + dir * ga.h / 2 };
             t = { x: gb.cx, y: gb.cy - dir * gb.h / 2 };
-            // segmen akhir/awal vertikal: mundurkan sepanjang y menjauh dari node.
-            if (arrowAtT) t.y -= dir * GAP;
-            if (arrowAtS) s.y += dir * GAP;
             midY = via ? via.y : (s.y + t.y) / 2;
             d = 'M ' + s.x + ' ' + s.y + ' L ' + s.x + ' ' + midY +
                 ' L ' + t.x + ' ' + midY + ' L ' + t.x + ' ' + t.y;
+            // segmen akhir menuju t vertikal (arah dir); segmen awal keluar s vertikal.
+            tAngle = dir > 0 ? Math.PI / 2 : -Math.PI / 2;
+            sAngle = dir > 0 ? -Math.PI / 2 : Math.PI / 2;
         }
-        return { d: d, s: s, t: t, mid: { x: (s.x + t.x) / 2, y: (s.y + t.y) / 2 } };
+        return { d: d, s: s, t: t, tAngle: tAngle, sAngle: sAngle, mid: { x: (s.x + t.x) / 2, y: (s.y + t.y) / 2 } };
     }
 
     function drawEdge(e) {
@@ -383,38 +406,36 @@ window.createDiagram = function (opts) {
         const elbow = e.style === 'elbow';
 
         let s, t, d;
+        let tAngle, sAngle; // sudut datang kepala panah di t dan di s
         if (elbow) {
             const ep = elbowPath(ga, gb, via, e.dir || 'forward');
             s = ep.s; t = ep.t; d = ep.d;
+            tAngle = ep.tAngle; sAngle = ep.sAngle;
         } else {
-            // Titik ujung dihitung mengarah ke titik berikutnya (via bila ada, jika tidak ke pusat lawan).
+            // Titik ujung PAS di tepi node (tanpa mundur). Kepala panah digambar di overlay atas.
             s = edgePoint(ga, via ? via.x : gb.cx, via ? via.y : gb.cy);
             t = edgePoint(gb, via ? via.x : ga.cx, via ? via.y : ga.cy);
-            // Mundurkan ujung yang berpanah keluar node, LEBIH panjang dari kepala panah
-            // (markerWidth 10 × strokeWidth 2 ≈ 16px) agar kepala panah tidak tertutup kotak node.
-            const GAP = 20;
-            const edirGap = e.dir || 'forward';
-            if (edirGap === 'forward' || edirGap === 'both') t = pullBack(t, via ? via : s, GAP);
-            if (edirGap === 'backward' || edirGap === 'both') s = pullBack(s, via ? via : t, GAP);
-            // Path: lurus bila tanpa waypoint, kurva quadratic halus bila ada waypoint.
             d = via
                 ? 'M ' + s.x + ' ' + s.y + ' Q ' + via.x + ' ' + via.y + ' ' + t.x + ' ' + t.y
                 : 'M ' + s.x + ' ' + s.y + ' L ' + t.x + ' ' + t.y;
+            const fromT = via ? via : s, fromS = via ? via : t;
+            tAngle = Math.atan2(t.y - fromT.y, t.x - fromT.x);
+            sAngle = Math.atan2(s.y - fromS.y, s.x - fromS.x);
         }
 
         const g = document.createElementNS(SVGNS, 'g');
 
-        // garis terlihat
+        // garis terlihat (TANPA marker; kepala panah digambar terpisah di overlay atas node)
         const poly = document.createElementNS(SVGNS, 'path');
         poly.setAttribute('d', d);
         poly.setAttribute('fill', 'none');
         poly.setAttribute('stroke', '#3e4c59'); poly.setAttribute('stroke-width', '2');
-        // Arah panah: forward (default) end, backward start, both keduanya, none tanpa panah.
-        const edir = e.dir || 'forward';
-        if (edir === 'forward' || edir === 'both') poly.setAttribute('marker-end', 'url(#dg-arrow)');
-        if (edir === 'backward' || edir === 'both') poly.setAttribute('marker-start', 'url(#dg-arrow-start)');
-        // Garis putus-putus (dashed).
         if (e.dashed) poly.setAttribute('stroke-dasharray', '7 5');
+
+        // Kepala panah di overlay ATAS node — tidak akan tertutup kotak node manapun.
+        const edir = e.dir || 'forward';
+        if (edir === 'forward' || edir === 'both') drawArrowHead(t, tAngle);
+        if (edir === 'backward' || edir === 'both') drawArrowHead(s, sAngle);
 
         // hit-area lebar untuk klik/hover
         const hit = document.createElementNS(SVGNS, 'path');
@@ -730,6 +751,7 @@ window.createDiagram = function (opts) {
             }
         });
         svg.setAttribute('width', mx); svg.setAttribute('height', my);
+        arrowLayer.setAttribute('width', mx); arrowLayer.setAttribute('height', my);
         stage.style.width = mx + 'px'; stage.style.height = my + 'px';
     }
 
@@ -776,63 +798,44 @@ window.createDiagram = function (opts) {
         c.width = w; c.height = h;
         const ctx = c.getContext('2d');
         ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
-        // edges (dengan titik belok/waypoint & label)
+        // edges (dengan titik belok/waypoint & label). Kepala panah dikumpulkan lalu digambar
+        // SETELAH node agar tidak tertutup kotak (mirip overlay di layar).
+        const arrowHeads = [];
+        function pushHead(tip, ang) { arrowHeads.push({ tip: tip, ang: ang }); }
         ctx.lineWidth = 2;
         model.edges.forEach(function (e) {
             const a = findNode(e.from), b = findNode(e.to); if (!a || !b) return;
             const ga = nodeGeom(a), gb = nodeGeom(b);
             const via = (typeof e.wx === 'number' && typeof e.wy === 'number') ? { x: e.wx, y: e.wy } : null;
             const elbow = e.style === 'elbow';
-            let s, t, prevForArrow, mid;
+            let s, t, mid, tAngle, sAngle;
             ctx.strokeStyle = '#3e4c59';
             ctx.setLineDash(e.dashed ? [7, 5] : []);
             if (elbow) {
                 const ep = elbowPath(ga, gb, via, e.dir || 'forward');
-                s = ep.s; t = ep.t; mid = ep.mid;
-                // gambar path siku dari string d: parse titik-titiknya
+                s = ep.s; t = ep.t; mid = ep.mid; tAngle = ep.tAngle; sAngle = ep.sAngle;
                 const pts = ep.d.match(/-?\d+(\.\d+)?/g).map(Number);
                 ctx.beginPath(); ctx.moveTo(pts[0], pts[1]);
                 for (let i = 2; i < pts.length; i += 2) ctx.lineTo(pts[i], pts[i + 1]);
                 ctx.stroke();
-                // arah panah = dari titik kedua-terakhir ke terakhir
-                const n = pts.length;
-                prevForArrow = { x: pts[n - 4], y: pts[n - 3] };
             } else {
                 s = edgePoint(ga, via ? via.x : gb.cx, via ? via.y : gb.cy);
                 t = edgePoint(gb, via ? via.x : ga.cx, via ? via.y : ga.cy);
-                const GAP = 20;
-                const ed = e.dir || 'forward';
-                if (ed === 'forward' || ed === 'both') t = pullBack(t, via ? via : s, GAP);
-                if (ed === 'backward' || ed === 'both') s = pullBack(s, via ? via : t, GAP);
                 ctx.beginPath(); ctx.moveTo(s.x, s.y);
                 if (via) ctx.quadraticCurveTo(via.x, via.y, t.x, t.y);
                 else ctx.lineTo(t.x, t.y);
                 ctx.stroke();
-                prevForArrow = via ? via : s;
+                const fromT = via ? via : s, fromS = via ? via : t;
+                tAngle = Math.atan2(t.y - fromT.y, t.x - fromT.x);
+                sAngle = Math.atan2(s.y - fromS.y, s.x - fromS.x);
                 mid = via
                     ? { x: 0.25 * s.x + 0.5 * via.x + 0.25 * t.x, y: 0.25 * s.y + 0.5 * via.y + 0.25 * t.y }
                     : { x: (s.x + t.x) / 2, y: (s.y + t.y) / 2 };
             }
-            // panah — arah sesuai e.dir (arrowhead selalu solid)
             ctx.setLineDash([]);
             const edir = e.dir || 'forward';
-            ctx.fillStyle = '#3e4c59';
-            if (edir === 'forward' || edir === 'both') {
-                const ang = Math.atan2(t.y - prevForArrow.y, t.x - prevForArrow.x);
-                ctx.beginPath(); ctx.moveTo(t.x, t.y);
-                ctx.lineTo(t.x - 10 * Math.cos(ang - 0.4), t.y - 10 * Math.sin(ang - 0.4));
-                ctx.lineTo(t.x - 10 * Math.cos(ang + 0.4), t.y - 10 * Math.sin(ang + 0.4));
-                ctx.closePath(); ctx.fill();
-            }
-            if (edir === 'backward' || edir === 'both') {
-                // panah di ujung awal (s), mengarah keluar dari garis
-                const nextForStart = via ? via : t;
-                const angS = Math.atan2(s.y - nextForStart.y, s.x - nextForStart.x);
-                ctx.beginPath(); ctx.moveTo(s.x, s.y);
-                ctx.lineTo(s.x - 10 * Math.cos(angS - 0.4), s.y - 10 * Math.sin(angS - 0.4));
-                ctx.lineTo(s.x - 10 * Math.cos(angS + 0.4), s.y - 10 * Math.sin(angS + 0.4));
-                ctx.closePath(); ctx.fill();
-            }
+            if (edir === 'forward' || edir === 'both') pushHead(t, tAngle);
+            if (edir === 'backward' || edir === 'both') pushHead(s, sAngle);
             // label
             if (e.label) {
                 ctx.font = '12px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
@@ -895,6 +898,18 @@ window.createDiagram = function (opts) {
             const tl = wrapText(ctx, String(n.text), maxTextW);
             const lh = 16, sy = cy - (tl.length - 1) * lh / 2;
             tl.forEach(function (ln, i) { ctx.fillText(ln, cx, sy + i * lh); });
+        });
+        // Kepala panah digambar SETELAH node agar tidak tertutup kotak besar.
+        ctx.fillStyle = '#3e4c59'; ctx.setLineDash([]);
+        arrowHeads.forEach(function (h) {
+            const L = 12, W = 6, tip = h.tip, ang = h.ang;
+            const bx = tip.x - L * Math.cos(ang), by = tip.y - L * Math.sin(ang);
+            const nx = Math.sin(ang), ny = -Math.cos(ang);
+            ctx.beginPath();
+            ctx.moveTo(tip.x, tip.y);
+            ctx.lineTo(bx + W * nx, by + W * ny);
+            ctx.lineTo(bx - W * nx, by - W * ny);
+            ctx.closePath(); ctx.fill();
         });
         c.toBlob(function (blob) { saveBlob(opts.fileBase + '.png', blob, 'image/png', 'png', 'PNG image'); }, 'image/png');
     }
