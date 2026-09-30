@@ -84,7 +84,17 @@ window.createDiagram = function (opts) {
         marker.setAttribute('markerUnits', 'strokeWidth');
         const ap = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         ap.setAttribute('d', 'M0,0 L8,3 L0,6 Z'); ap.setAttribute('fill', '#3e4c59');
-        marker.appendChild(ap); defs.appendChild(marker); svg.appendChild(defs);
+        marker.appendChild(ap); defs.appendChild(marker);
+        // Marker panah terbalik untuk ujung awal (arah backward / bidirectional).
+        const markerS = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+        markerS.setAttribute('id', 'dg-arrow-start'); markerS.setAttribute('markerWidth', '10');
+        markerS.setAttribute('markerHeight', '10'); markerS.setAttribute('refX', '0');
+        markerS.setAttribute('refY', '3'); markerS.setAttribute('orient', 'auto');
+        markerS.setAttribute('markerUnits', 'strokeWidth');
+        const apS = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        apS.setAttribute('d', 'M8,0 L0,3 L8,6 Z'); apS.setAttribute('fill', '#3e4c59');
+        markerS.appendChild(apS); defs.appendChild(markerS);
+        svg.appendChild(defs);
 
         model.nodes.forEach(renderNode);
         model.edges.forEach(drawEdge);
@@ -229,6 +239,16 @@ window.createDiagram = function (opts) {
             menu.appendChild(row);
         }
 
+        // Urutan tumpuk (z-order): node digambar sesuai urutan array; belakang = paling atas.
+        item('Bring to front', function () {
+            const i = model.nodes.indexOf(node);
+            if (i !== -1) { model.nodes.splice(i, 1); model.nodes.push(node); render(); save(); }
+        });
+        item('Send to back', function () {
+            const i = model.nodes.indexOf(node);
+            if (i !== -1) { model.nodes.splice(i, 1); model.nodes.unshift(node); render(); save(); }
+        });
+
         item('Delete node', function () {
             if (confirm('Delete this node and its connected arrows?')) actions.doDelete();
         });
@@ -282,6 +302,20 @@ window.createDiagram = function (opts) {
         item(isElbow ? 'Style: make Curved' : 'Style: make Elbow (step)', function () {
             edge.style = isElbow ? 'curve' : 'elbow';
             render();
+        });
+        // Arah panah: forward (default), backward, both (dua arah), none.
+        const dir = edge.dir || 'forward';
+        function dirItem(text, val) {
+            item((dir === val ? '● ' : '○ ') + text, function () { edge.dir = val; render(); });
+        }
+        dirItem('Arrow: end (→)', 'forward');
+        dirItem('Arrow: start (←)', 'backward');
+        dirItem('Arrow: both (↔)', 'both');
+        dirItem('Arrow: none (—)', 'none');
+        // Garis putus-putus (dashed) atau solid.
+        const dashed = !!edge.dashed;
+        item(dashed ? 'Line: make Solid' : 'Line: make Dashed', function () {
+            edge.dashed = !dashed; render();
         });
         item('Delete arrow', function () {
             model.edges = model.edges.filter(function (x) { return x !== edge; });
@@ -349,7 +383,12 @@ window.createDiagram = function (opts) {
         poly.setAttribute('d', d);
         poly.setAttribute('fill', 'none');
         poly.setAttribute('stroke', '#3e4c59'); poly.setAttribute('stroke-width', '2');
-        poly.setAttribute('marker-end', 'url(#dg-arrow)');
+        // Arah panah: forward (default) end, backward start, both keduanya, none tanpa panah.
+        const edir = e.dir || 'forward';
+        if (edir === 'forward' || edir === 'both') poly.setAttribute('marker-end', 'url(#dg-arrow)');
+        if (edir === 'backward' || edir === 'both') poly.setAttribute('marker-start', 'url(#dg-arrow-start)');
+        // Garis putus-putus (dashed).
+        if (e.dashed) poly.setAttribute('stroke-dasharray', '7 5');
 
         // hit-area lebar untuk klik/hover
         const hit = document.createElementNS(SVGNS, 'path');
@@ -720,6 +759,7 @@ window.createDiagram = function (opts) {
             const elbow = e.style === 'elbow';
             let s, t, prevForArrow, mid;
             ctx.strokeStyle = '#3e4c59';
+            ctx.setLineDash(e.dashed ? [7, 5] : []);
             if (elbow) {
                 const ep = elbowPath(ga, gb, via);
                 s = ep.s; t = ep.t; mid = ep.mid;
@@ -743,12 +783,26 @@ window.createDiagram = function (opts) {
                     ? { x: 0.25 * s.x + 0.5 * via.x + 0.25 * t.x, y: 0.25 * s.y + 0.5 * via.y + 0.25 * t.y }
                     : { x: (s.x + t.x) / 2, y: (s.y + t.y) / 2 };
             }
-            // panah di ujung
-            const ang = Math.atan2(t.y - prevForArrow.y, t.x - prevForArrow.x);
-            ctx.beginPath(); ctx.moveTo(t.x, t.y);
-            ctx.lineTo(t.x - 10 * Math.cos(ang - 0.4), t.y - 10 * Math.sin(ang - 0.4));
-            ctx.lineTo(t.x - 10 * Math.cos(ang + 0.4), t.y - 10 * Math.sin(ang + 0.4));
-            ctx.closePath(); ctx.fillStyle = '#3e4c59'; ctx.fill();
+            // panah — arah sesuai e.dir (arrowhead selalu solid)
+            ctx.setLineDash([]);
+            const edir = e.dir || 'forward';
+            ctx.fillStyle = '#3e4c59';
+            if (edir === 'forward' || edir === 'both') {
+                const ang = Math.atan2(t.y - prevForArrow.y, t.x - prevForArrow.x);
+                ctx.beginPath(); ctx.moveTo(t.x, t.y);
+                ctx.lineTo(t.x - 10 * Math.cos(ang - 0.4), t.y - 10 * Math.sin(ang - 0.4));
+                ctx.lineTo(t.x - 10 * Math.cos(ang + 0.4), t.y - 10 * Math.sin(ang + 0.4));
+                ctx.closePath(); ctx.fill();
+            }
+            if (edir === 'backward' || edir === 'both') {
+                // panah di ujung awal (s), mengarah keluar dari garis
+                const nextForStart = via ? via : t;
+                const angS = Math.atan2(s.y - nextForStart.y, s.x - nextForStart.x);
+                ctx.beginPath(); ctx.moveTo(s.x, s.y);
+                ctx.lineTo(s.x - 10 * Math.cos(angS - 0.4), s.y - 10 * Math.sin(angS - 0.4));
+                ctx.lineTo(s.x - 10 * Math.cos(angS + 0.4), s.y - 10 * Math.sin(angS + 0.4));
+                ctx.closePath(); ctx.fill();
+            }
             // label
             if (e.label) {
                 ctx.font = '12px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';

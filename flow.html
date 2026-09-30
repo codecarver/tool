@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Flow Diagram</title>
-    <link rel="stylesheet" href="css/app.css?v=27"/>
+    <link rel="stylesheet" href="css/app.css?v=28"/>
 </head>
 <body>
 <header class="landing-hero landing-hero-sm">
@@ -49,9 +49,9 @@
             <summary>How to use</summary>
             <div class="tool-help-body">
                 <ul>
-                    <li>Add shapes from the toolbar. Drag a node to move it. Drag the corner handle to resize.</li>
-                    <li><strong>Right-click</strong> a node for its menu (edit text, connect arrow, color, group, delete). Double-click text to edit quickly.</li>
-                    <li>On a line: drag the <strong>blue handle</strong> to bend it, double-click to add a <strong>label</strong>, or <strong>right-click</strong> for the menu (label / straighten / curved or elbow style / delete).</li>
+                    <li>Add shapes from the toolbar. Drag a node to move it. Drag its <strong>bottom-right corner</strong> to resize (no handle needed).</li>
+                    <li><strong>Right-click</strong> a node for its menu (edit text, connect arrow, color, group, <strong>bring to front / send to back</strong>, delete). Double-click text to edit quickly.</li>
+                    <li>On a line: <strong>drag the line itself</strong> to bend it, double-click to add a <strong>label</strong>, or <strong>right-click</strong> for the menu — set <strong>arrow direction</strong> (end / start / both / none), <strong>dashed</strong> or solid, curved or elbow style, straighten, delete.</li>
                     <li>Use <strong>+ Text</strong> to write free text outside shapes.</li>
                     <li><strong>Drag on empty space</strong> to select multiple nodes (or <strong>Shift+click</strong>), then right-click &rarr; <strong>Group</strong> to move them together (Ungroup to undo).</li>
                     <li>On touch devices, <strong>press and hold</strong> a node or line to open its menu.</li>
@@ -86,8 +86,8 @@
 <footer class="app-footer">
     <span>Built with love from Darjo, kota autopilot.</span>
 </footer>
-<script src="js/fs-explorer.js?v=27"></script>
-<script src="js/diagram-core.js?v=27"></script>
+<script src="js/fs-explorer.js?v=28"></script>
+<script src="js/diagram-core.js?v=28"></script>
 <script>
     createDiagram({
         storageKey: 'tools.flow.v1', fileBase: 'flow',
@@ -123,7 +123,7 @@
         }
     });
 </script>
-<script src="js/sidebar-toggle.js?v=27"></script>
-<script src="js/prayer-times.js?v=27"></script>
+<script src="js/sidebar-toggle.js?v=28"></script>
+<script src="js/prayer-times.js?v=28"></script>
 </body>
 </html>
