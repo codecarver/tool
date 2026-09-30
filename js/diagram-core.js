@@ -117,6 +117,14 @@ window.createDiagram = function (opts) {
         const s = 1 / Math.max(Math.abs(dx) / (g.w / 2), Math.abs(dy) / (g.h / 2));
         return { x: g.cx + dx * s, y: g.cy + dy * s };
     }
+    // Geser titik `p` sejauh `dist` px menjauh dari node (ke arah `toward`), agar kepala
+    // panah tidak tertutup kotak node.
+    function pullBack(p, toward, dist) {
+        const dx = toward.x - p.x, dy = toward.y - p.y;
+        const len = Math.hypot(dx, dy);
+        if (len < 0.001) return p;
+        return { x: p.x + (dx / len) * dist, y: p.y + (dy / len) * dist };
+    }
     // Pecah teks menjadi baris agar muat dalam lebar maxW (word-wrap), menghormati \n eksplisit.
     function wrapText(ctx, text, maxW) {
         const out = [];
@@ -370,6 +378,12 @@ window.createDiagram = function (opts) {
             // Titik ujung dihitung mengarah ke titik berikutnya (via bila ada, jika tidak ke pusat lawan).
             s = edgePoint(ga, via ? via.x : gb.cx, via ? via.y : gb.cy);
             t = edgePoint(gb, via ? via.x : ga.cx, via ? via.y : ga.cy);
+            // Mundurkan ujung yang berpanah beberapa px keluar node, agar kepala panah tidak
+            // tertutup oleh kotak node (node digambar di atas layer SVG garis).
+            const GAP = 9;
+            const edirGap = e.dir || 'forward';
+            if (edirGap === 'forward' || edirGap === 'both') t = pullBack(t, via ? via : s, GAP);
+            if (edirGap === 'backward' || edirGap === 'both') s = pullBack(s, via ? via : t, GAP);
             // Path: lurus bila tanpa waypoint, kurva quadratic halus bila ada waypoint.
             d = via
                 ? 'M ' + s.x + ' ' + s.y + ' Q ' + via.x + ' ' + via.y + ' ' + t.x + ' ' + t.y
@@ -774,6 +788,10 @@ window.createDiagram = function (opts) {
             } else {
                 s = edgePoint(ga, via ? via.x : gb.cx, via ? via.y : gb.cy);
                 t = edgePoint(gb, via ? via.x : ga.cx, via ? via.y : ga.cy);
+                const GAP = 9;
+                const ed = e.dir || 'forward';
+                if (ed === 'forward' || ed === 'both') t = pullBack(t, via ? via : s, GAP);
+                if (ed === 'backward' || ed === 'both') s = pullBack(s, via ? via : t, GAP);
                 ctx.beginPath(); ctx.moveTo(s.x, s.y);
                 if (via) ctx.quadraticCurveTo(via.x, via.y, t.x, t.y);
                 else ctx.lineTo(t.x, t.y);
