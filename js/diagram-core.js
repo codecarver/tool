@@ -438,11 +438,8 @@ window.createDiagram = function (opts) {
         hit.setAttribute('stroke', 'transparent'); hit.setAttribute('stroke-width', '16');
         hit.style.cursor = 'pointer';
 
-        // Hit-area (transparan, lebar) tetap di layer BAWAH node untuk klik/hover/seret garis.
         g.appendChild(hit);
-        // Garis TERLIHAT dipindah ke overlay ATAS node agar tidak tertutup kotak besar
-        // (badan garis + kepala panah sama-sama terlihat menembus kotak).
-        arrowLayer.appendChild(poly);
+        g.appendChild(poly);
 
         // Titik tengah kurva yang sebenarnya. Untuk kurva quadratic (M s Q via t),
         // titik pada t=0.5 adalah 0.25*s + 0.5*via + 0.25*t (bukan di titik kontrol via).
@@ -453,21 +450,21 @@ window.createDiagram = function (opts) {
                 ? { x: 0.25 * s.x + 0.5 * via.x + 0.25 * t.x, y: 0.25 * s.y + 0.5 * via.y + 0.25 * t.y }
                 : { x: (s.x + t.x) / 2, y: (s.y + t.y) / 2 });
 
-        // label garis (opsional) — di overlay atas juga agar tak tertutup kotak.
+        // label garis (opsional) — ukuran latar diperkirakan dari panjang teks (hindari getBBox)
         if (e.label) {
             const mid = curveMid;
             const w = e.label.length * 7 + 8;
-            const bg = document.createElementNS(ARR_NS, 'rect');
+            const bg = document.createElementNS(SVGNS, 'rect');
             bg.setAttribute('x', mid.x - w / 2); bg.setAttribute('y', mid.y - 20);
             bg.setAttribute('width', w); bg.setAttribute('height', 16);
             bg.setAttribute('fill', '#ffffff'); bg.setAttribute('opacity', '0.85'); bg.setAttribute('rx', '3');
-            const textEl = document.createElementNS(ARR_NS, 'text');
+            const textEl = document.createElementNS(SVGNS, 'text');
             textEl.setAttribute('x', mid.x); textEl.setAttribute('y', mid.y - 8);
             textEl.setAttribute('text-anchor', 'middle');
             textEl.setAttribute('font-size', '12'); textEl.setAttribute('fill', '#1f2933');
             textEl.textContent = e.label;
-            arrowLayer.appendChild(bg);
-            arrowLayer.appendChild(textEl);
+            g.appendChild(bg);
+            g.appendChild(textEl);
         }
 
         function onHoverIn() { poly.setAttribute('stroke', '#d64545'); }
@@ -796,9 +793,8 @@ window.createDiagram = function (opts) {
         c.width = w; c.height = h;
         const ctx = c.getContext('2d');
         ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
-        // Urutan sama seperti di layar: NODE dulu, lalu GARIS + KEPALA PANAH di atasnya,
-        // supaya badan garis & panah tidak tertutup kotak besar.
-        drawExportNodes();
+        // edges (dengan titik belok/waypoint & label). Kepala panah dikumpulkan, digambar
+        // SETELAH node agar tidak tertutup kotak besar (mirip overlay di layar).
         const arrowHeads = [];
         ctx.lineWidth = 2;
         model.edges.forEach(function (e) {
@@ -844,22 +840,7 @@ window.createDiagram = function (opts) {
                 ctx.fillText(e.label, mid.x, mid.y - 8);
             }
         });
-        // Kepala panah SETELAH garis (garis sudah di atas node).
-        ctx.fillStyle = '#3e4c59'; ctx.setLineDash([]);
-        arrowHeads.forEach(function (hd) {
-            const L = 12, W = 6, tip = hd.tip, ang = hd.ang;
-            const bx = tip.x - L * Math.cos(ang), by = tip.y - L * Math.sin(ang);
-            const nx = Math.sin(ang), ny = -Math.cos(ang);
-            ctx.beginPath();
-            ctx.moveTo(tip.x, tip.y);
-            ctx.lineTo(bx + W * nx, by + W * ny);
-            ctx.lineTo(bx - W * nx, by - W * ny);
-            ctx.closePath(); ctx.fill();
-        });
-        c.toBlob(function (blob) { saveBlob(opts.fileBase + '.png', blob, 'image/png', 'png', 'PNG image'); }, 'image/png');
-
-        // ---- gambar node (dipanggil sebelum edges) ----
-        function drawExportNodes() {
+        // nodes
         model.nodes.forEach(function (n) {
             const g = nodeGeom(n);
             ctx.fillStyle = n.fill || '#eef3ff'; ctx.strokeStyle = '#1f6feb'; ctx.lineWidth = 2;
@@ -912,7 +893,19 @@ window.createDiagram = function (opts) {
             const lh = 16, sy = cy - (tl.length - 1) * lh / 2;
             tl.forEach(function (ln, i) { ctx.fillText(ln, cx, sy + i * lh); });
         });
-        } // end drawExportNodes
+        // Kepala panah SETELAH node.
+        ctx.fillStyle = '#3e4c59'; ctx.setLineDash([]);
+        arrowHeads.forEach(function (hd) {
+            const L = 12, W = 6, tip = hd.tip, ang = hd.ang;
+            const bx = tip.x - L * Math.cos(ang), by = tip.y - L * Math.sin(ang);
+            const nx = Math.sin(ang), ny = -Math.cos(ang);
+            ctx.beginPath();
+            ctx.moveTo(tip.x, tip.y);
+            ctx.lineTo(bx + W * nx, by + W * ny);
+            ctx.lineTo(bx - W * nx, by - W * ny);
+            ctx.closePath(); ctx.fill();
+        });
+        c.toBlob(function (blob) { saveBlob(opts.fileBase + '.png', blob, 'image/png', 'png', 'PNG image'); }, 'image/png');
     }
     function importFile(file) {
         const r = new FileReader();
