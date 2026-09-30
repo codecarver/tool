@@ -184,6 +184,7 @@ window.createDiagram = function (opts) {
 
     // Palet warna umum untuk latar node.
     const FILL_COLORS = [
+        { name: 'Transparent', v: 'transparent' },
         { name: 'White', v: '#ffffff' },
         { name: 'Blue', v: '#cfe4ff' },
         { name: 'Green', v: '#cdefd6' },
@@ -236,8 +237,14 @@ window.createDiagram = function (opts) {
             row.className = 'dg-swatch-row';
             FILL_COLORS.forEach(function (c) {
                 const sw = document.createElement('button');
-                sw.type = 'button'; sw.className = 'dg-swatch-btn'; sw.title = c.name;
-                sw.style.background = c.v;
+                sw.type = 'button'; sw.title = c.name;
+                if (c.v === 'transparent') {
+                    // Swatch transparan: pola kotak-kotak agar dikenali.
+                    sw.className = 'dg-swatch-btn dg-swatch-transparent';
+                } else {
+                    sw.className = 'dg-swatch-btn';
+                    sw.style.background = c.v;
+                }
                 sw.addEventListener('click', function (e2) {
                     e2.stopPropagation(); closeEdgeMenu();
                     node.fill = c.v; render();
@@ -549,6 +556,8 @@ window.createDiagram = function (opts) {
         if (node.fill) {
             if (shape === 'diamond') el.style.setProperty('--dg-fill', node.fill);
             else el.style.background = node.fill;
+            // Latar transparan: hilangkan bayangan agar isi di belakangnya benar-benar terlihat.
+            if (node.fill === 'transparent') { el.classList.add('dg-transparent'); el.style.boxShadow = 'none'; }
         }
         el.dataset.id = node.id;
 
