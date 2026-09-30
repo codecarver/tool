@@ -1113,6 +1113,24 @@
     btnWrap.addEventListener('click', function () { rawWrap = !rawWrap; applyWrap(); });
     applyWrap();
 
+    // Spell check toggle (browser built-in). Persisted; default ON.
+    const btnSpell = document.getElementById('nt-spell');
+    let spellOn = localStorage.getItem('nt-spellcheck') !== 'off';
+    function applySpell() {
+        editor.setAttribute('spellcheck', spellOn ? 'true' : 'false');
+        if (btnSpell) btnSpell.classList.toggle('active', spellOn);
+        // Paksa browser mengevaluasi ulang: blur+focus ringan.
+        if (document.activeElement === editor) { editor.blur(); editor.focus(); }
+    }
+    if (btnSpell) {
+        btnSpell.addEventListener('click', function () {
+            spellOn = !spellOn;
+            localStorage.setItem('nt-spellcheck', spellOn ? 'on' : 'off');
+            applySpell();
+        });
+    }
+    applySpell();
+
     // Export to PDF: open a print window with the editor content + styles, then print (Save as PDF).
     function exportPdf() {
         const title = (currentFileName || 'notes').replace(/\.[^.]+$/, '');
@@ -1147,26 +1165,29 @@
     // Ketik untuk memfilter, ↑/↓ untuk navigasi, Enter/klik untuk memilih, Esc menutup.
     (function slashCommandMenu() {
         const COMMANDS = [
-            { label: 'Heading 1', hint: 'Judul besar', icon: 'H1', run: function () { exec('formatBlock', 'H1'); } },
-            { label: 'Heading 2', hint: 'Sub judul', icon: 'H2', run: function () { exec('formatBlock', 'H2'); } },
-            { label: 'Heading 3', hint: 'Sub-sub judul', icon: 'H3', run: function () { exec('formatBlock', 'H3'); } },
-            { label: 'Normal text', hint: 'Paragraf biasa', icon: '¶', run: function () { exec('formatBlock', 'P'); } },
-            { label: 'Bulleted list', hint: 'Daftar butir', icon: '•', run: function () { exec('insertUnorderedList'); } },
-            { label: 'Numbered list', hint: 'Daftar bernomor', icon: '1.', run: function () { exec('insertOrderedList'); } },
-            { label: 'Quote', hint: 'Kutipan', icon: '❝', run: function () { exec('formatBlock', 'BLOCKQUOTE'); } },
-            { label: 'Divider', hint: 'Garis pemisah', icon: '―', run: function () { runAction('hr'); } },
-            { label: 'Inline code', hint: 'Kode sebaris', icon: '</>', run: function () { runAction('code'); } },
-            { label: 'Code block', hint: 'Blok kode', icon: '▤', run: function () { runAction('codeblock'); } },
-            { label: 'Table', hint: 'Sisipkan tabel', icon: '▦', run: function () { runAction('table'); } },
-            { label: 'Collapsible', hint: 'Bagian yang bisa dilipat', icon: '▸', run: function () { runAction('details'); } },
-            { label: 'Link', hint: 'Sisipkan tautan', icon: '🔗', run: function () { runAction('link'); } },
-            { label: 'Bold', hint: 'Tebal', icon: 'B', run: function () { exec('bold'); } },
-            { label: 'Italic', hint: 'Miring', icon: 'I', run: function () { exec('italic'); } },
-            { label: 'Strikethrough', hint: 'Coret', icon: 'S', run: function () { exec('strikeThrough'); } },
-            { label: 'Date & time', hint: 'Sisipkan tanggal/waktu', icon: '📅', run: function () {
-                const d = new Date();
-                const s = d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
-                document.execCommand('insertText', false, s);
+            { label: 'Heading 1', hint: 'Large section heading', icon: 'H1', run: function () { exec('formatBlock', 'H1'); } },
+            { label: 'Heading 2', hint: 'Medium heading', icon: 'H2', run: function () { exec('formatBlock', 'H2'); } },
+            { label: 'Heading 3', hint: 'Small heading', icon: 'H3', run: function () { exec('formatBlock', 'H3'); } },
+            { label: 'Normal text', hint: 'Plain paragraph', icon: '¶', run: function () { exec('formatBlock', 'P'); } },
+            { label: 'Bulleted list', hint: 'Bullet point list', icon: '•', run: function () { exec('insertUnorderedList'); } },
+            { label: 'Numbered list', hint: 'Ordered list', icon: '1.', run: function () { exec('insertOrderedList'); } },
+            { label: 'Quote', hint: 'Block quote', icon: '❝', run: function () { exec('formatBlock', 'BLOCKQUOTE'); } },
+            { label: 'Divider', hint: 'Horizontal rule', icon: '―', run: function () { runAction('hr'); } },
+            { label: 'Inline code', hint: 'Inline code snippet', icon: '</>', run: function () { runAction('code'); } },
+            { label: 'Code block', hint: 'Multi-line code block', icon: '▤', run: function () { runAction('codeblock'); } },
+            { label: 'Table', hint: 'Insert a table', icon: '▦', run: function () { runAction('table'); } },
+            { label: 'Collapsible', hint: 'Collapsible section', icon: '▸', run: function () { runAction('details'); } },
+            { label: 'Link', hint: 'Insert a link', icon: '🔗', run: function () { runAction('link'); } },
+            { label: 'Bold', hint: 'Bold text', icon: 'B', run: function () { exec('bold'); } },
+            { label: 'Italic', hint: 'Italic text', icon: 'I', run: function () { exec('italic'); } },
+            { label: 'Strikethrough', hint: 'Strikethrough text', icon: 'S', run: function () { exec('strikeThrough'); } },
+            { label: 'Date & time', hint: 'Pick a date/time format', icon: '📅', submenu: function () {
+                // Sama seperti dropdown tanggal di toolbar: daftar format untuk dipilih.
+                return dateFormats().map(function (f) {
+                    return { label: f, hint: '', icon: '📅', run: function () {
+                        document.execCommand('insertText', false, f);
+                    } };
+                });
             } }
         ];
 
@@ -1180,6 +1201,7 @@
         let slashRange = null; // posisi tepat setelah "/" saat menu dibuka
         let items = [];
         let activeIdx = 0;
+        let subItems = null; // bila tidak null, sedang menampilkan submenu (mis. format tanggal)
 
         function currentTextBeforeCaret() {
             const sel = window.getSelection();
@@ -1191,14 +1213,14 @@
             const sel = window.getSelection();
             if (!sel || !sel.rangeCount) return;
             slashRange = sel.getRangeAt(0).cloneRange();
-            open = true; filter = ''; activeIdx = 0;
+            open = true; filter = ''; activeIdx = 0; subItems = null;
             renderItems();
             positionMenu();
             menu.style.display = 'block';
         }
 
         function closeMenu() {
-            open = false; menu.style.display = 'none'; slashRange = null;
+            open = false; menu.style.display = 'none'; slashRange = null; subItems = null;
         }
 
         function positionMenu() {
@@ -1223,7 +1245,9 @@
 
         function renderItems() {
             const f = filter.toLowerCase();
-            items = COMMANDS.filter(function (c) {
+            const source = subItems ? subItems : COMMANDS;
+            items = source.filter(function (c) {
+                if (c.__back) return true; // baris "Back" selalu tampil
                 return !f || c.label.toLowerCase().indexOf(f) !== -1 || (c.hint && c.hint.toLowerCase().indexOf(f) !== -1);
             });
             if (activeIdx >= items.length) activeIdx = Math.max(0, items.length - 1);
@@ -1237,10 +1261,11 @@
             }
             items.forEach(function (c, i) {
                 const row = document.createElement('div');
-                row.className = 'nt-slash-item' + (i === activeIdx ? ' active' : '');
+                row.className = 'nt-slash-item' + (i === activeIdx ? ' active' : '') + (c.submenu ? ' has-sub' : '');
                 row.innerHTML = '<span class="nt-slash-ico">' + escapeHtml(c.icon) + '</span>' +
                     '<span class="nt-slash-txt"><span class="nt-slash-lbl">' + escapeHtml(c.label) + '</span>' +
-                    '<span class="nt-slash-hint">' + escapeHtml(c.hint || '') + '</span></span>';
+                    (c.hint ? '<span class="nt-slash-hint">' + escapeHtml(c.hint) + '</span>' : '') + '</span>' +
+                    (c.submenu ? '<span class="nt-slash-arrow">▸</span>' : '');
                 row.addEventListener('mousedown', function (e) { e.preventDefault(); choose(i); });
                 row.addEventListener('mousemove', function () { if (activeIdx !== i) { activeIdx = i; highlight(); } });
                 menu.appendChild(row);
@@ -1253,15 +1278,29 @@
             });
         }
 
-        // Hapus teks "/filter" yang sudah diketik, lalu jalankan perintah.
+        // Pilih item: bila ada submenu -> buka submenu; bila "Back" -> kembali ke menu utama;
+        // selain itu jalankan perintah (dan hapus teks "/filter").
         function choose(i) {
             const cmd = items[i];
             if (!cmd) { closeMenu(); return; }
+            if (cmd.__back) { openSubmenu(null); return; }
+            if (cmd.submenu) { openSubmenu(cmd.submenu()); return; }
             removeSlashText();
             closeMenu();
             editor.focus();
             cmd.run();
             markDirty();
+        }
+
+        // Tampilkan submenu (array item) atau kembali ke menu utama (list null).
+        function openSubmenu(list) {
+            if (list) {
+                subItems = [{ __back: true, label: '‹ Back', hint: '', icon: '‹', run: function () {} }].concat(list);
+            } else {
+                subItems = null;
+            }
+            filter = ''; activeIdx = subItems ? 1 : 0;
+            renderItems(); positionMenu(); highlight();
         }
 
         // Hapus karakter "/" + kata filter sebelum kursor.
@@ -1293,11 +1332,16 @@
                 if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(items.length - 1, activeIdx + 1); highlight(); return; }
                 if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(0, activeIdx - 1); highlight(); return; }
                 if (e.key === 'Enter') { e.preventDefault(); choose(activeIdx); return; }
-                if (e.key === 'Escape') { e.preventDefault(); closeMenu(); return; }
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    if (subItems) { openSubmenu(null); } else { closeMenu(); }
+                    return;
+                }
                 if (e.key === 'Backspace') {
-                    // bila filter kosong dan menekan backspace, tutup menu (menghapus "/")
-                    if (filter === '') { closeMenu(); return; }
-                    filter = filter.slice(0, -1); setTimeout(function () { renderItems(); highlight(); }, 0); return;
+                    if (filter !== '') { filter = filter.slice(0, -1); setTimeout(function () { renderItems(); highlight(); }, 0); return; }
+                    // filter kosong: bila di submenu kembali ke menu utama; bila di menu utama tutup
+                    if (subItems) { openSubmenu(null); return; }
+                    closeMenu(); return;
                 }
                 if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
                     filter += e.key; setTimeout(function () { renderItems(); positionMenu(); highlight(); }, 0);

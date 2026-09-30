@@ -603,7 +603,9 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
     justify-content: center; background: #f0f3f6; border-radius: 6px; font-size: 0.85rem; font-weight: 700;
     color: #3e4c59; }
 .nt-slash-item.active .nt-slash-ico { background: #d6e4ff; color: #1f6feb; }
-.nt-slash-txt { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+.nt-slash-txt { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; flex: 1; }
 .nt-slash-lbl { font-size: 0.9rem; font-weight: 600; color: #1f2933; }
 .nt-slash-hint { font-size: 0.75rem; color: #8a94a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nt-slash-empty { padding: 0.6rem 0.7rem; color: #8a94a6; font-size: 0.85rem; }
+.nt-slash-arrow { flex: 0 0 auto; margin-left: auto; color: #a5adba; font-size: 0.8rem; }
+.nt-slash-item.active .nt-slash-arrow { color: #1f6feb; }

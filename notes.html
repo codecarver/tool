@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content"/>
     <title>Notes (Markdown)</title>
-    <link rel="stylesheet" href="css/app.css?v=24"/>
+    <link rel="stylesheet" href="css/app.css?v=26"/>
 </head>
 <body>
 <header class="landing-hero landing-hero-sm">
@@ -34,7 +34,8 @@
                     <li>Inside a list, press <strong>Tab</strong> to nest a sub-list and <strong>Shift+Tab</strong> to go up a level.</li>
                     <li><strong>Multi-line code block</strong>: use <strong>＋▾ → Code block</strong>. Inside it, <strong>Enter</strong> = new line, <strong>Tab</strong> = 2 spaces, <strong>Enter on an empty line</strong> exits the block.</li>
                     <li><strong>A▾</strong> = text color, highlight, and insert <strong>date/time</strong> (select text first for color).</li>
-                    <li><strong>💾</strong> saves. The <strong>⋯▾</strong> menu has Save as…, Export PDF, Toggle Raw source, and word-wrap. A literal <code>&lt;br&gt;</code> renders as a line break.</li>
+                    <li><strong>💾</strong> saves. The <strong>⋯▾</strong> menu has Save as…, Export PDF, Toggle Raw source, word-wrap, and <strong>Toggle spell check</strong>. A literal <code>&lt;br&gt;</code> renders as a line break.</li>
+                    <li><strong>Spell check</strong> uses your browser's built-in checker (English). Misspelled words get a red underline; right-click a word for suggestions. Toggle it off in <strong>⋯▾</strong> for mixed-language notes.</li>
                     <li><strong>Auto-save</strong> writes back to the file automatically. Requires a Chromium-based browser (Chrome/Edge) for folder access.</li>
                 </ul>
             </div>
@@ -128,11 +129,12 @@
                             <button type="button" id="nt-pdf">Export PDF</button>
                             <button type="button" id="nt-raw">Toggle Raw source</button>
                             <button type="button" id="nt-wrap">Toggle word wrap (Raw)</button>
+                            <button type="button" id="nt-spell">Toggle spell check</button>
                         </div>
                     </div>
                     <span class="nt-status" id="nt-status"></span>
                 </div>
-                <div class="nt-editor" id="nt-editor" contenteditable="true" spellcheck="false"></div>
+                <div class="nt-editor" id="nt-editor" contenteditable="true" spellcheck="true"></div>
                 <textarea class="nt-raw" id="nt-raw-area" spellcheck="false" style="display:none"></textarea>
             </section>
         </div>
@@ -141,8 +143,8 @@
 <footer class="app-footer">
     <span>Built with love from Darjo, kota autopilot.</span>
 </footer>
-<script src="js/notes.js?v=24"></script>
-<script src="js/sidebar-toggle.js?v=24"></script>
-<script src="js/prayer-times.js?v=24"></script>
+<script src="js/notes.js?v=26"></script>
+<script src="js/sidebar-toggle.js?v=26"></script>
+<script src="js/prayer-times.js?v=26"></script>
 </body>
 </html>
