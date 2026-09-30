@@ -408,50 +408,55 @@ window.createDiagram = function (opts) {
         hit.addEventListener('contextmenu', openEdgeMenu);
         enableLongPress(hit, openEdgeMenu); // tekan-tahan di layar sentuh
 
-        // Handle untuk membelokkan garis (drag titik tengah). Handle selalu menempel di garis (curveMid).
-        const handlePos = curveMid;
-        const handle = document.createElementNS(SVGNS, 'circle');
-        handle.setAttribute('cx', handlePos.x); handle.setAttribute('cy', handlePos.y);
-        handle.setAttribute('r', '6');
-        handle.setAttribute('fill', '#fff'); handle.setAttribute('stroke', '#1f6feb');
-        handle.setAttribute('stroke-width', '2');
-        handle.style.cursor = 'move';
-        handle.setAttribute('class', 'dg-edge-handle');
-        enableWaypointDrag(handle, e);
-        g.appendChild(handle);
+        // Belokkan garis dengan menyeret garis itu sendiri — tanpa tombol/handle tambahan.
+        // Klik biasa tetap bisa (menu klik-kanan, dobel-klik edit label); hanya SERET yang membelokkan.
+        hit.style.cursor = 'grab';
+        enableWaypointDrag(hit, e);
 
         svg.appendChild(g);
     }
 
-    // Drag handle untuk mengeset titik belok (waypoint) edge.
+    // Seret garis untuk membelokkannya (mengeset waypoint). Memakai ambang gerak kecil
+    // agar KLIK biasa (dobel-klik edit label, klik-kanan menu) tetap berfungsi — hanya
+    // gerakan menyeret yang mengubah lengkung. Tanpa tombol/handle tambahan.
     function enableWaypointDrag(handle, edge) {
-        let dragging = false;
+        let dragging = false, armed = false, startX = 0, startY = 0;
+        const THRESH = 4; // px sebelum dianggap seret
+        function apply(ev) {
+            const p = svgPoint(ev);
+            edge.wx = Math.max(0, p.x);
+            edge.wy = Math.max(0, p.y);
+            redrawEdges();
+        }
         function down(ev) {
-            ev.stopPropagation(); ev.preventDefault();
-            dragging = true;
+            ev.stopPropagation();
+            armed = true; dragging = false;
+            const t = ev.touches ? ev.touches[0] : ev;
+            startX = t.clientX; startY = t.clientY;
             document.addEventListener('mousemove', move);
             document.addEventListener('mouseup', up);
             document.addEventListener('touchmove', move, { passive: false });
             document.addEventListener('touchend', up);
         }
         function move(ev) {
-            if (!dragging) return;
-            const p = svgPoint(ev);
-            // Titik kontrol = posisi pointer langsung. Kurva selalu melengkung ke arah pointer
-            // dengan lengkung yang wajar (tidak overshoot). Handle akan digambar ulang di titik
-            // tengah kurva sehingga tetap menempel di garis.
-            edge.wx = Math.max(0, p.x);
-            edge.wy = Math.max(0, p.y);
-            redrawEdges();
+            if (!armed) return;
+            const t = ev.touches ? ev.touches[0] : ev;
+            if (!dragging) {
+                if (Math.abs(t.clientX - startX) < THRESH && Math.abs(t.clientY - startY) < THRESH) return;
+                dragging = true;
+                handle.style.cursor = 'grabbing';
+            }
+            apply(ev);
             if (ev.cancelable) ev.preventDefault();
         }
         function up() {
-            dragging = false;
             document.removeEventListener('mousemove', move);
             document.removeEventListener('mouseup', up);
             document.removeEventListener('touchmove', move);
             document.removeEventListener('touchend', up);
-            save();
+            armed = false;
+            handle.style.cursor = 'grab';
+            if (dragging) { dragging = false; save(); }
         }
         handle.addEventListener('mousedown', down);
         handle.addEventListener('touchstart', down, { passive: false });
@@ -515,55 +520,58 @@ window.createDiagram = function (opts) {
         el.addEventListener('contextmenu', openNodeMenu);
         enableLongPress(el, openNodeMenu); // tekan-tahan di layar sentuh
 
-        // Handle resize di pojok kanan-bawah.
-        const rz = document.createElement('div');
-        rz.className = 'dg-resize';
-        rz.title = 'Resize';
-        enableResize(rz, el, node);
-        el.appendChild(rz);
+        // Resize dilakukan dengan menyeret langsung pojok kanan-bawah node (tanpa tombol).
+        enableEdgeResize(el, node);
 
         enableDrag(el, node);
         nodesLayer.appendChild(el);
         elById[node.id] = el;
     }
 
-    function enableResize(handle, el, node) {
-        let sx, sy, ow, oh, resizing = false;
+    // Deteksi kursor di zona pojok kanan-bawah node; bila di sana, seret = resize.
+    const RESIZE_ZONE = 14; // px dari sudut kanan-bawah
+    function inResizeZone(el, e) {
+        const t = e.touches ? e.touches[0] : e;
+        const r = el.getBoundingClientRect();
+        return (r.right - t.clientX) <= RESIZE_ZONE && (r.bottom - t.clientY) <= RESIZE_ZONE
+            && (r.right - t.clientX) >= -2 && (r.bottom - t.clientY) >= -2;
+    }
+    function enableEdgeResize(el, node) {
+        // Ubah kursor jadi nwse-resize saat berada di zona sudut.
+        el.addEventListener('mousemove', function (e) {
+            if (el.classList.contains('dragging')) return;
+            el.style.cursor = inResizeZone(el, e) ? 'nwse-resize' : '';
+        });
+        el.addEventListener('mouseleave', function () { el.style.cursor = ''; });
+    }
+
+    // Mulai resize dari event pointer (dipanggil saat menyeret dari zona sudut kanan-bawah).
+    function startResize(el, node, e) {
         const MIN_W = 60, MIN_H = 36;
-        function down(e) {
-            e.stopPropagation();
-            e.preventDefault();
-            resizing = true;
-            const p = pt(e);
-            sx = p.x; sy = p.y;
-            // ukuran awal: dari node.w/h bila ada, jika tidak dari DOM saat ini
-            ow = (typeof node.w === 'number') ? node.w : el.offsetWidth;
-            oh = (typeof node.h === 'number') ? node.h : el.offsetHeight;
-            document.addEventListener('mousemove', move);
-            document.addEventListener('mouseup', up);
-            document.addEventListener('touchmove', move, { passive: false });
-            document.addEventListener('touchend', up);
-        }
-        function move(e) {
-            if (!resizing) return;
-            const p = pt(e);
+        const p0 = pt(e);
+        const sx = p0.x, sy = p0.y;
+        const ow = (typeof node.w === 'number') ? node.w : el.offsetWidth;
+        const oh = (typeof node.h === 'number') ? node.h : el.offsetHeight;
+        function move(ev) {
+            const p = pt(ev);
             node.w = Math.max(MIN_W, ow + (p.x - sx) / zoom);
             node.h = Math.max(MIN_H, oh + (p.y - sy) / zoom);
             el.style.width = node.w + 'px';
             el.style.height = node.h + 'px';
             redrawEdges();
-            if (e.cancelable) e.preventDefault();
+            if (ev.cancelable) ev.preventDefault();
         }
         function up() {
-            resizing = false;
             document.removeEventListener('mousemove', move);
             document.removeEventListener('mouseup', up);
             document.removeEventListener('touchmove', move);
             document.removeEventListener('touchend', up);
             save();
         }
-        handle.addEventListener('mousedown', down);
-        handle.addEventListener('touchstart', down, { passive: false });
+        document.addEventListener('mousemove', move);
+        document.addEventListener('mouseup', up);
+        document.addEventListener('touchmove', move, { passive: false });
+        document.addEventListener('touchend', up);
     }
 
     function enableDrag(el, node) {
@@ -572,6 +580,12 @@ window.createDiagram = function (opts) {
             if (e.button && e.button !== 0) return; // abaikan klik kanan/tengah
             if (e.target.tagName === 'BUTTON') return;
             if (e.ctrlKey || e.metaKey) return; // Ctrl+seret = pan kanvas (ditangani terpisah)
+            // Seret dari pojok kanan-bawah = resize (tanpa tombol).
+            if (!connectFrom && !e.shiftKey && inResizeZone(el, e)) {
+                e.stopPropagation(); e.preventDefault();
+                startResize(el, node, e);
+                return;
+            }
             // Sedang mode hubungkan: node ini menjadi tujuan panah.
             if (connectFrom) {
                 if (connectFrom !== node.id) {

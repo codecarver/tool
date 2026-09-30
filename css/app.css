@@ -268,11 +268,7 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
 .dg-swatch-btn { width: 22px; height: 22px; border-radius: 4px; border: 1px solid #cbd2d9;
     cursor: pointer; padding: 0; }
 .dg-swatch-btn:hover { outline: 2px solid #1f6feb; outline-offset: 1px; }
-/* Handle resize di pojok kanan-bawah node */
-.dg-resize { position: absolute; right: -5px; bottom: -5px; width: 12px; height: 12px;
-    background: #fff; border: 2px solid #1f6feb; border-radius: 3px; cursor: nwse-resize;
-    z-index: 5; box-sizing: border-box; }
-.dg-resize:hover { background: #d6e4ff; }
+/* Resize dilakukan dengan menyeret langsung pojok kanan-bawah node (tanpa tombol). */
 .mm-canvas.dg-linking { cursor: crosshair; }
 /* Saat menggeser panel dengan Ctrl+seret */
 .mm-canvas.dg-panning, .mm-canvas.dg-panning * { cursor: grabbing !important; }
@@ -454,8 +450,7 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
     .nt-date-item { padding: 0.6rem 0.7rem; }
     .nt-swatch, .dg-swatch-btn { width: 28px; height: 28px; }
 
-    /* Diagram node action affordances a bit larger for touch */
-    .dg-resize { width: 16px; height: 16px; right: -7px; bottom: -7px; }
+
 
     /* Sequence diagram: stack text input above the rendered canvas */
     .sq-layout { flex-direction: column; }
