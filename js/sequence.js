@@ -153,6 +153,9 @@
         let y = bodyTop;
         model.steps.forEach(function (s) {
             const h = stepHeight(s);
+            // Ruang ekstra untuk label multi-baris: dorong panah/loop TURUN sebanyak ruang label
+            // di atasnya, agar label tidak menabrak pesan sebelumnya (auto-expand ke bawah).
+            const extraLabel = (s.type === 'msg') ? Math.max(0, labelLines(s) - 1) * LINE_H : 0;
             if (s.type === 'sep') {
                 // Separator horizontal untuk memisahkan bagian.
                 svg.appendChild(el('line', { x1: marginX, y1: y, x2: width - marginX, y2: y,
@@ -175,7 +178,8 @@
                 const x = xOf[s.from];
                 if (x == null) { y += h; return; }
                 const color = s.red ? '#d64545' : '#3e4c59';
-                const loopW = 40, loopTop = y, loopBot = y + 26;
+                const loopY = y + extraLabel; // dorong turun untuk beri ruang label di atas
+                const loopW = 40, loopTop = loopY, loopBot = loopY + 26;
                 const loopAttrs = {
                     d: 'M ' + x + ' ' + loopTop + ' h ' + loopW + ' v ' + (loopBot - loopTop) + ' h ' + (-loopW + 8),
                     fill: 'none', stroke: color, 'stroke-width': '1.8'
@@ -196,10 +200,11 @@
             } else {
                 const x1 = xOf[s.from], x2 = xOf[s.to];
                 if (x1 == null || x2 == null) { y += h; return; }
+                const lineY = y + extraLabel; // panah di bawah ruang label multi-baris
                 const dir = x2 >= x1 ? 1 : -1;
                 const color = s.red ? '#d64545' : '#3e4c59';
                 const endX = x2 - dir * 8;
-                const lineAttrs = { x1: x1, y1: y, x2: endX, y2: y,
+                const lineAttrs = { x1: x1, y1: lineY, x2: endX, y2: lineY,
                     stroke: color, 'stroke-width': '1.8' };
                 if (s.dashed) lineAttrs['stroke-dasharray'] = '6 4';
                 // Panah normal hanya bila tidak gagal; kalau gagal, garis berhenti lalu diberi X.
@@ -208,7 +213,7 @@
 
                 if (s.failed) {
                     // tanda X di ujung untuk menandai gagal terkirim
-                    const cx = endX, cy = y, r = 6;
+                    const cx = endX, cy = lineY, r = 6;
                     svg.appendChild(el('line', { x1: cx - r, y1: cy - r, x2: cx + r, y2: cy + r,
                         stroke: color, 'stroke-width': '2.2' }));
                     svg.appendChild(el('line', { x1: cx - r, y1: cy + r, x2: cx + r, y2: cy - r,
@@ -216,7 +221,7 @@
                 }
 
                 const msgLines = s.lines && s.lines.length ? s.lines : [s.text];
-                svg.appendChild(multiText((x1 + x2) / 2, y - 6, 'middle',
+                svg.appendChild(multiText((x1 + x2) / 2, lineY - 6, 'middle',
                     s.red ? '#d64545' : '#1f2933', msgLines, LINE_H));
             }
             y += h;
