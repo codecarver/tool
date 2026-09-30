@@ -14,6 +14,7 @@ window.createDiagram = function (opts) {
     const stage = document.getElementById(opts.stageId);
 
     let model = { nodes: [], edges: [] };
+    let nodeIndex = {}; // id -> indeks di model.nodes (untuk z-order edge)
     let zoom = 1;
     let connectFrom = null; // id node sumber saat mode hubungkan
     let idc = 1;
@@ -96,6 +97,9 @@ window.createDiagram = function (opts) {
         markerS.appendChild(apS); defs.appendChild(markerS);
         svg.appendChild(defs);
 
+        // Peta id node -> indeks (untuk menentukan z-index edge relatif ke node endpoint-nya).
+        nodeIndex = {};
+        model.nodes.forEach(function (n, i) { nodeIndex[n.id] = i; });
         model.nodes.forEach(renderNode);
         model.edges.forEach(drawEdge);
         resize();
@@ -387,55 +391,73 @@ window.createDiagram = function (opts) {
             const ep = elbowPath(ga, gb, via, e.dir || 'forward');
             s = ep.s; t = ep.t; d = ep.d;
         } else {
-            // Titik ujung dihitung mengarah ke titik berikutnya (via bila ada, jika tidak ke pusat lawan).
+            // Ujung PAS di tepi node (tanpa mundur). Visibilitas kepala panah diatur oleh z-index
+            // per-edge: bila node target di depan, garis+panah tampil; bila kotak lain di depan, tertutup.
             s = edgePoint(ga, via ? via.x : gb.cx, via ? via.y : gb.cy);
             t = edgePoint(gb, via ? via.x : ga.cx, via ? via.y : ga.cy);
-            // Mundurkan ujung yang berpanah keluar node, LEBIH panjang dari kepala panah
-            // (markerWidth 10 × strokeWidth 2 ≈ 16px) agar kepala panah tidak tertutup kotak node.
-            const GAP = 20;
-            const edirGap = e.dir || 'forward';
-            if (edirGap === 'forward' || edirGap === 'both') t = pullBack(t, via ? via : s, GAP);
-            if (edirGap === 'backward' || edirGap === 'both') s = pullBack(s, via ? via : t, GAP);
-            // Path: lurus bila tanpa waypoint, kurva quadratic halus bila ada waypoint.
             d = via
                 ? 'M ' + s.x + ' ' + s.y + ' Q ' + via.x + ' ' + via.y + ' ' + t.x + ' ' + t.y
                 : 'M ' + s.x + ' ' + s.y + ' L ' + t.x + ' ' + t.y;
         }
 
+        // ----- hit-area (interaksi) di layer BAWAH (#dg-svg) -----
         const g = document.createElementNS(SVGNS, 'g');
-
-        // garis terlihat
-        const poly = document.createElementNS(SVGNS, 'path');
-        poly.setAttribute('d', d);
-        poly.setAttribute('fill', 'none');
-        poly.setAttribute('stroke', '#3e4c59'); poly.setAttribute('stroke-width', '2');
-        // Arah panah: forward (default) end, backward start, both keduanya, none tanpa panah.
-        const edir = e.dir || 'forward';
-        if (edir === 'forward' || edir === 'both') poly.setAttribute('marker-end', 'url(#dg-arrow)');
-        if (edir === 'backward' || edir === 'both') poly.setAttribute('marker-start', 'url(#dg-arrow-start)');
-        // Garis putus-putus (dashed).
-        if (e.dashed) poly.setAttribute('stroke-dasharray', '7 5');
-
-        // hit-area lebar untuk klik/hover
         const hit = document.createElementNS(SVGNS, 'path');
         hit.setAttribute('d', d);
         hit.setAttribute('fill', 'none');
         hit.setAttribute('stroke', 'transparent'); hit.setAttribute('stroke-width', '16');
-        hit.style.cursor = 'pointer';
-
+        hit.style.cursor = 'grab';
         g.appendChild(hit);
-        g.appendChild(poly);
+        svg.appendChild(g);
 
-        // Titik tengah kurva yang sebenarnya. Untuk kurva quadratic (M s Q via t),
-        // titik pada t=0.5 adalah 0.25*s + 0.5*via + 0.25*t (bukan di titik kontrol via).
-        // Dengan ini label & handle selalu menempel di garis yang terlihat.
+        // ----- garis TERLIHAT + kepala panah di SVG per-edge, z-index mengikuti node target -----
+        const eSvg = document.createElementNS(SVGNS, 'svg');
+        eSvg.setAttribute('class', 'dg-edge-svg');
+        eSvg.style.position = 'absolute';
+        eSvg.style.top = '0'; eSvg.style.left = '0';
+        eSvg.style.width = '100%'; eSvg.style.height = '100%';
+        eSvg.style.overflow = 'visible';
+        eSvg.style.pointerEvents = 'none';
+        // z-index: tepat di atas node endpoint dengan indeks tertinggi. Node z = (i+1)*2,
+        // edge z = maxEndpointZ + 1 -> di atas kedua endpoint tapi di bawah node yang lebih depan.
+        const zi = Math.max(nodeIndex[e.from] || 0, nodeIndex[e.to] || 0);
+        eSvg.style.zIndex = String((zi + 1) * 2 + 1);
+
+        // defs marker lokal untuk svg edge ini
+        const defs = document.createElementNS(SVGNS, 'defs');
+        const mk = document.createElementNS(SVGNS, 'marker');
+        mk.setAttribute('id', 'dg-ar-' + (e.from) + '-' + (e.to) + '-e');
+        mk.setAttribute('markerWidth', '10'); mk.setAttribute('markerHeight', '10');
+        mk.setAttribute('refX', '8'); mk.setAttribute('refY', '3');
+        mk.setAttribute('orient', 'auto'); mk.setAttribute('markerUnits', 'strokeWidth');
+        const mkp = document.createElementNS(SVGNS, 'path');
+        mkp.setAttribute('d', 'M0,0 L8,3 L0,6 Z'); mkp.setAttribute('fill', '#3e4c59');
+        mk.appendChild(mkp); defs.appendChild(mk);
+        const mkS = document.createElementNS(SVGNS, 'marker');
+        mkS.setAttribute('id', 'dg-ar-' + (e.from) + '-' + (e.to) + '-s');
+        mkS.setAttribute('markerWidth', '10'); mkS.setAttribute('markerHeight', '10');
+        mkS.setAttribute('refX', '0'); mkS.setAttribute('refY', '3');
+        mkS.setAttribute('orient', 'auto'); mkS.setAttribute('markerUnits', 'strokeWidth');
+        const mkSp = document.createElementNS(SVGNS, 'path');
+        mkSp.setAttribute('d', 'M8,0 L0,3 L8,6 Z'); mkSp.setAttribute('fill', '#3e4c59');
+        mkS.appendChild(mkSp); defs.appendChild(mkS);
+        eSvg.appendChild(defs);
+
+        const poly = document.createElementNS(SVGNS, 'path');
+        poly.setAttribute('d', d);
+        poly.setAttribute('fill', 'none');
+        poly.setAttribute('stroke', '#3e4c59'); poly.setAttribute('stroke-width', '2');
+        const edir = e.dir || 'forward';
+        if (edir === 'forward' || edir === 'both') poly.setAttribute('marker-end', 'url(#dg-ar-' + e.from + '-' + e.to + '-e)');
+        if (edir === 'backward' || edir === 'both') poly.setAttribute('marker-start', 'url(#dg-ar-' + e.from + '-' + e.to + '-s)');
+        if (e.dashed) poly.setAttribute('stroke-dasharray', '7 5');
+        eSvg.appendChild(poly);
+
         const curveMid = elbow
             ? { x: (s.x + t.x) / 2, y: (s.y + t.y) / 2 }
             : (via
                 ? { x: 0.25 * s.x + 0.5 * via.x + 0.25 * t.x, y: 0.25 * s.y + 0.5 * via.y + 0.25 * t.y }
                 : { x: (s.x + t.x) / 2, y: (s.y + t.y) / 2 });
-
-        // label garis (opsional) — ukuran latar diperkirakan dari panjang teks (hindari getBBox)
         if (e.label) {
             const mid = curveMid;
             const w = e.label.length * 7 + 8;
@@ -448,10 +470,11 @@ window.createDiagram = function (opts) {
             textEl.setAttribute('text-anchor', 'middle');
             textEl.setAttribute('font-size', '12'); textEl.setAttribute('fill', '#1f2933');
             textEl.textContent = e.label;
-            g.appendChild(bg);
-            g.appendChild(textEl);
+            eSvg.appendChild(bg); eSvg.appendChild(textEl);
         }
+        nodesLayer.appendChild(eSvg);
 
+        // Hover: garis memerah saat kursor di atas hit-area.
         function onHoverIn() { poly.setAttribute('stroke', '#d64545'); }
         function onHoverOut() { poly.setAttribute('stroke', '#3e4c59'); }
         g.addEventListener('mouseenter', onHoverIn);
@@ -461,24 +484,14 @@ window.createDiagram = function (opts) {
             const lbl = prompt('Line label:', e.label || '');
             if (lbl !== null) { e.label = lbl.trim(); render(); }
         }
-
-        // Klik dua kali garis: langsung edit label.
         hit.addEventListener('dblclick', function (ev) { ev.stopPropagation(); editLabel(); });
-
-        // Klik kanan garis: tampilkan menu (keterangan/belokkan/hapus).
         function openEdgeMenu(ev) {
             ev.preventDefault(); ev.stopPropagation();
             showEdgeMenu(ev, e, editLabel);
         }
         hit.addEventListener('contextmenu', openEdgeMenu);
-        enableLongPress(hit, openEdgeMenu); // tekan-tahan di layar sentuh
-
-        // Belokkan garis dengan menyeret garis itu sendiri — tanpa tombol/handle tambahan.
-        // Klik biasa tetap bisa (menu klik-kanan, dobel-klik edit label); hanya SERET yang membelokkan.
-        hit.style.cursor = 'grab';
+        enableLongPress(hit, openEdgeMenu);
         enableWaypointDrag(hit, e);
-
-        svg.appendChild(g);
     }
 
     // Seret garis untuk membelokkannya (mengeset waypoint). Memakai ambang gerak kecil
@@ -534,7 +547,7 @@ window.createDiagram = function (opts) {
         return { x: (t.clientX - rect.left) / zoom, y: (t.clientY - rect.top) / zoom };
     }
 
-    function renderNode(node) {
+    function renderNode(node, index) {
         const shape = node.shape || defaultShape;
         const el = document.createElement('div');
         el.className = 'dg-node dg-' + shape
@@ -542,6 +555,9 @@ window.createDiagram = function (opts) {
             + (selection.has(node.id) ? ' selected' : '');
         el.style.left = node.x + 'px';
         el.style.top = node.y + 'px';
+        // z-index urut sesuai posisi di model.nodes (belakang array = paling depan).
+        // Kelipatan 2 agar garis edge bisa diselipkan tepat di atas node endpoint-nya.
+        el.style.zIndex = String((index + 1) * 2);
         // Ukuran eksplisit bila node pernah di-resize.
         if (typeof node.w === 'number') el.style.width = node.w + 'px';
         if (typeof node.h === 'number') el.style.height = node.h + 'px';
@@ -713,9 +729,9 @@ window.createDiagram = function (opts) {
     }
     function pt(e) { const t = e.touches ? e.touches[0] : e; return { x: t.clientX, y: t.clientY }; }
     function redrawEdges() {
-        // buang grup edge (bukan defs), lalu gambar ulang
-        const groups = svg.querySelectorAll('g');
-        groups.forEach(function (gp) { gp.remove(); });
+        // buang grup hit-area (#dg-svg) + svg garis per-edge (#dg-nodes), lalu gambar ulang
+        svg.querySelectorAll('g').forEach(function (gp) { gp.remove(); });
+        nodesLayer.querySelectorAll('.dg-edge-svg').forEach(function (es) { es.remove(); });
         // pastikan kanvas cukup besar saat garis dibelokkan jauh (mis. sedang di-drag)
         resize();
         model.edges.forEach(drawEdge);
