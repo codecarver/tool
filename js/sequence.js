@@ -15,6 +15,7 @@
 
     const input = document.getElementById('sq-input');
     const svg = document.getElementById('sq-svg');
+    const headSvg = document.getElementById('sq-head'); // header lengket (judul + aktor)
 
     // ===== Parse =====
     // Format per baris: "A -> B: pesan"  atau  "note: teks"
@@ -90,10 +91,11 @@
         const model = parse(input.value);
         lastModel = model;
         while (svg.firstChild) svg.removeChild(svg.firstChild);
+        while (headSvg.firstChild) headSvg.removeChild(headSvg.firstChild);
 
         const marginX = 40, actorH = 34, gapY = 50;
         const titleH = model.title ? 34 : 0;   // ruang untuk judul keseluruhan
-        const topY = 30 + titleH;
+        const topY = 30 + titleH;               // posisi kotak aktor di dalam HEADER
         const colW = 160;
         const actors = model.actors;
         const xOf = {};
@@ -113,19 +115,34 @@
         }
 
         const width = Math.max(400, marginX * 2 + Math.max(1, actors.length) * colW);
-        const bodyTop = topY + actorH + 20;
+        const headH = topY + actorH + 10;       // tinggi header lengket
+        const bodyPad = 24;                      // jarak dari atas body ke pesan pertama
         let totalStepsH = 0;
         model.steps.forEach(function (s) { totalStepsH += stepHeight(s); });
-        const height = bodyTop + totalStepsH + 60;
+        const bodyHeight = bodyPad + totalStepsH + 40;
 
-        svg.setAttribute('width', width);
-        svg.setAttribute('height', height);
-
-        // Judul keseluruhan di paling atas (opsional)
+        // ---------- HEADER (lengket): judul + kotak aktor + stub lifeline ----------
+        headSvg.setAttribute('width', width);
+        headSvg.setAttribute('height', headH);
         if (model.title) {
-            svg.appendChild(el('text', { x: width / 2, y: 26, 'text-anchor': 'middle',
+            headSvg.appendChild(el('text', { x: width / 2, y: 26, 'text-anchor': 'middle',
                 'font-size': '18', 'font-weight': 'bold', fill: '#1f2933' }, model.title));
         }
+        actors.forEach(function (a) {
+            const x = xOf[a];
+            // stub lifeline pendek di bawah kotak agar tersambung mulus ke body
+            headSvg.appendChild(el('line', { x1: x, y1: topY + actorH, x2: x, y2: headH,
+                stroke: '#cbd2d9', 'stroke-width': '1.5', 'stroke-dasharray': '4 4' }));
+            const boxW = Math.max(80, a.length * 8 + 20);
+            headSvg.appendChild(el('rect', { x: x - boxW / 2, y: topY, width: boxW, height: actorH,
+                rx: 6, fill: '#e7f0ff', stroke: '#1f6feb', 'stroke-width': '1.5' }));
+            headSvg.appendChild(el('text', { x: x, y: topY + actorH / 2 + 4, 'text-anchor': 'middle',
+                'font-size': '13', fill: '#1f2933' }, a));
+        });
+
+        // ---------- BODY (scroll): lifelines + steps, mulai dari y=0 ----------
+        svg.setAttribute('width', width);
+        svg.setAttribute('height', bodyHeight);
 
         // arrow markers (normal + merah)
         const defs = el('defs', {});
@@ -137,20 +154,15 @@
         });
         svg.appendChild(defs);
 
-        // lifelines + actor boxes
+        // lifelines membentang penuh di body (dari atas ke bawah)
         actors.forEach(function (a) {
             const x = xOf[a];
-            svg.appendChild(el('line', { x1: x, y1: topY + actorH, x2: x, y2: height - 30,
+            svg.appendChild(el('line', { x1: x, y1: 0, x2: x, y2: bodyHeight - 10,
                 stroke: '#cbd2d9', 'stroke-width': '1.5', 'stroke-dasharray': '4 4' }));
-            const boxW = Math.max(80, a.length * 8 + 20);
-            svg.appendChild(el('rect', { x: x - boxW / 2, y: topY, width: boxW, height: actorH,
-                rx: 6, fill: '#e7f0ff', stroke: '#1f6feb', 'stroke-width': '1.5' }));
-            svg.appendChild(el('text', { x: x, y: topY + actorH / 2 + 4, 'text-anchor': 'middle',
-                'font-size': '13', fill: '#1f2933' }, a));
         });
 
         // steps
-        let y = bodyTop;
+        let y = bodyPad;
         model.steps.forEach(function (s) {
             const h = stepHeight(s);
             // Ruang ekstra untuk label multi-baris: dorong panah/loop TURUN sebanyak ruang label
@@ -260,23 +272,31 @@
         const blob = new Blob([JSON.stringify({ text: input.value }, null, 2)], { type: 'application/json' });
         saveBlob('sequence.json', blob, 'application/json', 'json', 'JSON file');
     }
+    function svgToImage(svgEl) {
+        return new Promise(function (resolve, reject) {
+            const xml = new XMLSerializer().serializeToString(svgEl);
+            const img = new Image();
+            const url = URL.createObjectURL(new Blob([xml], { type: 'image/svg+xml;charset=utf-8' }));
+            img.onload = function () { resolve({ img: img, url: url }); };
+            img.onerror = function (e) { URL.revokeObjectURL(url); reject(e); };
+            img.src = url;
+        });
+    }
     function exportPng() {
-        const clone = svg.cloneNode(true);
-        const xml = new XMLSerializer().serializeToString(clone);
-        const img = new Image();
-        const svgBlob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' });
-        const url = URL.createObjectURL(svgBlob);
-        img.onload = function () {
+        // Gabungkan HEADER (judul + aktor) di atas dan BODY (pesan) di bawahnya jadi satu gambar.
+        const w = parseInt(svg.getAttribute('width')) || 800;
+        const headH = parseInt(headSvg.getAttribute('height')) || 0;
+        const bodyH = parseInt(svg.getAttribute('height')) || 600;
+        Promise.all([svgToImage(headSvg), svgToImage(svg)]).then(function (parts) {
             const c = document.createElement('canvas');
-            c.width = parseInt(svg.getAttribute('width')) || 800;
-            c.height = parseInt(svg.getAttribute('height')) || 600;
+            c.width = w; c.height = headH + bodyH;
             const ctx = c.getContext('2d');
             ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
-            ctx.drawImage(img, 0, 0);
-            URL.revokeObjectURL(url);
+            ctx.drawImage(parts[0].img, 0, 0);
+            ctx.drawImage(parts[1].img, 0, headH);
+            URL.revokeObjectURL(parts[0].url); URL.revokeObjectURL(parts[1].url);
             c.toBlob(function (blob) { saveBlob('sequence.png', blob, 'image/png', 'png', 'PNG image'); }, 'image/png');
-        };
-        img.src = url;
+        });
     }
     function importFile(file) {
         const r = new FileReader();

@@ -190,7 +190,10 @@ input, select, textarea { width: 100%; padding: 0.55rem; border: 1px solid #cbd2
     font-size: 0.9rem; padding: 0.6rem; border: 1px solid #cbd2d9; border-radius: 8px; resize: vertical;
     overflow: auto; }
 .sq-canvas { flex: 2 1 400px; min-width: 0; height: 600px; overflow: auto; border: 1px solid #cbd2d9; border-radius: 8px;
-    background: #fbfdff; }
+    background: #fbfdff; position: relative; }
+/* Header lengket (judul + kotak aktor) tetap di atas saat body di-scroll. */
+.sq-head { position: sticky; top: 0; z-index: 5; display: block;
+    background: #fbfdff; box-shadow: 0 2px 6px -4px rgba(15,23,42,0.4); }
 
 /* ===== Diagram + file-explorer layout (flow, free, sequence) ===== */
 .dg-wrap, .sq-wrap { display: flex; gap: 1rem; align-items: stretch; position: relative; }
